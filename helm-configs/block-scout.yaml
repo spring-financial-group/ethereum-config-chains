@@ -139,11 +139,11 @@ frontend:
   
   extraEnv:
     - name: NEXT_PUBLIC_APP_HOST
-      value: "mqube-blockscout-frontend.mqube-playground.com
+      value: "mqube-blockscout-frontend.mqube-playground.com"
     - name: NEXT_PUBLIC_APP_PROTOCOL
       value: "https"
     - name: NEXT_PUBLIC_API_HOST
-      value: "mqube-blockscout-backend.mqube-playground.com
+      value: "mqube-blockscout-backend.mqube-playground.com"
     - name: NEXT_PUBLIC_API_PROTOCOL
       value: "https"
     - name: NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL
