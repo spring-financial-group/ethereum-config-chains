@@ -13,7 +13,7 @@ Installation is performed via:
 helm upgrade --install ...
 ```
 
-Helm values are overridden through custom `values.yaml` files to allow easy deployment in environments such as **tagging**, **staging**, or **production** using **Jenkins X (JX)** and `helmfiles.yaml`.
+Helm values are overridden through custom `values.yaml` files to allow easy deployment in environments such as **staging**, or **production** using **Jenkins X (JX)** and `helmfiles.yaml`.
 
 You’ll need two main components:
 
