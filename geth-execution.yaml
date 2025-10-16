@@ -1,0 +1,23 @@
+jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
+
+replicas: 1
+
+extraArgs:
+
+  - --syncmode=full
+  - --snapshot=false 
+  - --gcmode=archive
+  - --txlookuplimit=0  
+
+  - --nodiscover
+  - --maxpeers=0
+
+  - --http.api=eth,net,web3,txpool
+  - --ws.api=eth,net,web3,txpool
+
+devnet:
+  enabled: true
+
+
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"

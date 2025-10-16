@@ -1,0 +1,99 @@
+jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
+
+p2pPort: 13001
+
+mode: "validator"
+
+devnet:
+  enabled: true
+
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"
+
+
+extraArgs:
+  - --beacon-rpc-provider=beacon-devnet-prysm:4000
+  - --accept-terms-of-use
+  - --wallet-dir=/data/wallet
+  - --wallet-password-file=/data/wallet-password.txt
+
+replicas: 1
+
+mode: validator
+
+validatorKeys:
+  existingSecret: validator-keystores
+  keystoresKey: keystores.tar.gz
+  passwordKey: password.txt
+
+image:
+  repository: ethpandaops/prysm-validator
+  tag: develop
+
+
+extraVolumes:
+  - name: vk
+    secret:
+      secretName: validator-keystores
+
+extraVolumeMounts:
+  - name: vk
+    mountPath: /secrets/validator-keys
+    readOnly: true
+
+initContainers:
+  - name: import-keys
+    image: ethpandaops/prysm-validator:develop
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: HOME
+        value: /data  
+    command:
+      - /bin/sh
+      - -lc
+      - |
+        set -e
+
+        # Prepare wallet + passwords
+        mkdir -p /data/wallet
+        cp /secrets/validator-keys/prysm-password.txt /data/wallet-password.txt
+
+        # Unpack Nimbus-style keystores
+        mkdir -p /tmp/keys-src
+        tar -xzf /secrets/validator-keys/keystores.tar.gz -C /tmp/keys-src
+
+        imported=0
+        failed=0
+
+        # Iterate over each keystore.json (POSIX-safe; filenames assumed to have no newlines)
+        for kjson in $(find /tmp/keys-src -type f -name 'keystore*.json'); do
+          pubdir=$(dirname "$kjson")
+          pub=$(basename "$pubdir")   # 0x.... ; matches teku-secrets/${pub}.txt
+
+          passfile="/secrets/validator-keys/${pub}.txt"
+          [ -f "$passfile" ] || passfile="/secrets/validator-keys/prysm-password.txt"
+
+          rm -rf /tmp/one && mkdir -p /tmp/one
+          cp "$kjson" /tmp/one/
+
+          if /app/cmd/validator/validator accounts import \
+                --accept-terms-of-use \
+                --keys-dir=/tmp/one \
+                --wallet-dir=/data/wallet \
+                --wallet-password-file=/data/wallet-password.txt \
+                --account-password-file="$passfile" >/tmp/import.$pub.log 2>&1; then
+            imported=$((imported+1))
+          else
+            echo "WARN: import failed for $pub (see /tmp/import.$pub.log)"
+            failed=$((failed+1))
+          fi
+        done
+
+        echo "Imported $imported keystores; failed $failed"
+        [ "$imported" -gt 0 ] || { echo "ERROR: no keys imported"; exit 1; }
+    volumeMounts:
+      - name: storage
+        mountPath: /data
+      - name: vk
+        mountPath: /secrets/validator-keys
+        readOnly: true
