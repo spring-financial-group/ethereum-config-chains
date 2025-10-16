@@ -63,10 +63,10 @@ blockscout:
       solver: azuredns
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: mqube-blockscout-backend.{{ .Values.global.domain }}
+    hostname: mqube-blockscout-backend.mqube-playground.com
     tls:
       enabled: true
-      secretName: {{ printf "tls-%s" .Values.global.tls-secret }}
+      secretName: tls-mqube-playground-com-p
     paths:
       - path: /
         pathType: Prefix
@@ -129,27 +129,27 @@ frontend:
       solver: azuredns
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: mqube-blockscout-frontend.{{ .Values.global.domain }}
+    hostname: mqube-blockscout-frontend.mqube-playground.com
     tls:
       enabled: true
-      secretName: {{ printf "tls-%s" .Values.global.tls-secret }}
+      secretName: tls-mqube-playground-com-p
     paths:
       - path: /
         pathType: Prefix
   
   extraEnv:
     - name: NEXT_PUBLIC_APP_HOST
-      value: "mqube-blockscout-frontend.{{ .Values.global.domain }}"
+      value: "mqube-blockscout-frontend.mqube-playground.com
     - name: NEXT_PUBLIC_APP_PROTOCOL
       value: "https"
     - name: NEXT_PUBLIC_API_HOST
-      value: "mqube-blockscout-backend.{{ .Values.global.domain }}"
+      value: "mqube-blockscout-backend.mqube-playground.com
     - name: NEXT_PUBLIC_API_PROTOCOL
       value: "https"
     - name: NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL
       value: "wss"
     - name: NEXT_PUBLIC_STATS_API_HOST
-      value: "https://mqube-blockscout-stats.{{ .Values.global.domain }}"
+      value: "https://mqube-blockscout-stats.mqube-playground.com"
     - name: NEXT_PUBLIC_STATS_API_BASE_PATH
       value: ""
 
@@ -197,14 +197,14 @@ stats:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       nginx.ingress.kubernetes.io/enable-cors: "true"
-      nginx.ingress.kubernetes.io/cors-allow-origin: "https://mqube-blockscout-frontend.{{ .Values.global.domain }}"
+      nginx.ingress.kubernetes.io/cors-allow-origin: "https://mqube-blockscout-frontend.mqube-playground.com"
       nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
       nginx.ingress.kubernetes.io/cors-allow-headers: "Origin, Content-Type, Accept, Authorization"
       nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
-    hostname: mqube-blockscout-stats.{{ .Values.global.domain }}
+    hostname: mqube-blockscout-stats.mqube-playground.com
     tls:
       enabled: true
-      secretName: {{ printf "tls-%s" .Values.global.tls-secret }}
+      secretName: tls-mqube-playground-com-p
     paths:
       - path: /
         pathType: Prefix
@@ -230,7 +230,7 @@ stats:
       value: "true"
 
     - name: STATS__BLOCKSCOUT_API_URL
-      value: "https://mqube-blockscout-backend.{{ .Values.global.domain }}"
+      value: "https://mqube-blockscout-backend.mqube-playground.com"
    
     - name: STATS__FORCE_UPDATE_ON_START
       value: "true" 
