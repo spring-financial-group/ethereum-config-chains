@@ -1,0 +1,237 @@
+# Blockscout Stack Helm values for existing PostgreSQL with SSL disabled
+
+# stack-level switches (cover new/old keys)
+config:
+  prometheus:
+    enabled: false
+    serviceMonitor:
+      enabled: false
+    podMonitor:
+      enabled: false
+    prometheusRule:
+      enabled: false
+    blackbox:
+      enabled: false    # uptime probe
+  uptime:
+    enabled: false       # same thing in some versions
+
+  # Network configuration
+  network:
+    id: "3151908"
+    name: "Geth Devnet"
+    shortname: "Devnet"
+    currency:
+      name: "Ether"
+      symbol: "ETH"
+      decimals: "18"
+
+  testnet: false
+
+
+monitoring:
+  enabled: false         # some releases use this root key
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+  prometheusRule:
+    enabled: false
+  blackbox:
+    enabled: false
+
+# PostgreSQL - disable bundled PostgreSQL
+postgresql:
+  enabled: false
+
+# Database configuration - use existing PostgreSQL
+blockscout:
+  enabled: true
+
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+
+  ingress:
+    enabled: true
+    className: nginx
+    labels:
+      solver: azuredns
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: mqube-blockscout-backend.mqube-playground.com
+    tls:
+      enabled: true
+      secretName: tls-mqube-playground-com-p
+    paths:
+      - path: /
+        pathType: Prefix
+
+  # Additional environment variables (use extraEnv not env!)
+  extraEnv:
+    - name: BLOCKSCOUT_PROTOCOL
+      value: "https"
+
+    # Database URL from existing secret
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: blockscout-db-env
+          key: DATABASE_URL
+
+    - name: API_V2_ENABLED
+      value: "true"
+    
+    # Disable SSL for database connection
+    - name: ECTO_USE_SSL
+      value: "false"
+    
+    # Geth RPC configuration
+    - name: ETHEREUM_JSONRPC_VARIANT
+      value: "geth"
+    
+    - name: ETHEREUM_JSONRPC_HTTP_URL
+      value: "http://geth-devnet:8545"
+    
+    - name: ETHEREUM_JSONRPC_WS_URL
+      value: "ws://geth-devnet:8546"
+    
+    - name: ETHEREUM_JSONRPC_TRACE_URL
+      value: "http://geth-devnet:8545"
+    
+    # Secret key base (generate with: openssl rand -base64 64)
+    - name: SECRET_KEY_BASE
+      value: "CHANGE_ME_GENERATE_A_SECRET"
+    
+
+# Frontend configuration
+frontend:
+  enabled: true
+
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+  
+  ingress:
+    enabled: true
+    className: nginx
+    labels:
+      solver: azuredns
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: mqube-blockscout-frontend.mqube-playground.com
+    tls:
+      enabled: true
+      secretName: tls-mqube-playground-com-p
+    paths:
+      - path: /
+        pathType: Prefix
+  
+  extraEnv:
+    - name: NEXT_PUBLIC_APP_HOST
+      value: "mqube-blockscout-frontend.mqube-playground.com"
+    - name: NEXT_PUBLIC_APP_PROTOCOL
+      value: "https"
+    - name: NEXT_PUBLIC_API_HOST
+      value: "mqube-blockscout-backend.mqube-playground.com"
+    - name: NEXT_PUBLIC_API_PROTOCOL
+      value: "https"
+    - name: NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL
+      value: "wss"
+    - name: NEXT_PUBLIC_STATS_API_HOST
+      value: "https://mqube-blockscout-stats.mqube-playground.com"
+    - name: NEXT_PUBLIC_STATS_API_BASE_PATH
+      value: ""
+
+    # Header/SEO branding
+    - name: NEXT_PUBLIC_NETWORK_NAME
+      value: "Mqube Servicing, Tokenization and Securitization Chain"
+    - name: NEXT_PUBLIC_NETWORK_SHORT_NAME
+      value: "Mqube Servicing, Tokenization and Securitization Chain"
+
+    # Drop the “– Blockscout” suffix in <title>
+    - name: NEXT_PUBLIC_PROMOTE_BLOCKSCOUT_IN_TITLE
+      value: "false"
+
+    # Optional: icons + social preview
+    - name: NEXT_PUBLIC_OG_DESCRIPTION
+      value: "Explorer for the Geth Devnet"
+    - name: NEXT_PUBLIC_OG_IMAGE_URL
+      value: "https://your.cdn.example/og-image.png"
+    - name: NEXT_PUBLIC_NETWORK_LOGO
+      value: "https://your.cdn.example/logo-light.svg"
+    - name: NEXT_PUBLIC_NETWORK_LOGO_DARK
+      value: "https://your.cdn.example/logo-dark.svg"
+    - name: NEXT_PUBLIC_NETWORK_ICON
+      value: "https://your.cdn.example/icon-64.png"
+
+# Stats service configuration
+stats:
+  enabled: true
+
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+
+  serviceMonitor:
+    enabled: false
+  podMonitor:
+    enabled: false
+
+  ingress:
+    enabled: true
+    className: nginx
+    labels:
+      solver: azuredns
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/cors-allow-origin: "https://mqube-blockscout-frontend.mqube-playground.com"
+      nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+      nginx.ingress.kubernetes.io/cors-allow-headers: "Origin, Content-Type, Accept, Authorization"
+      nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    hostname: mqube-blockscout-stats.mqube-playground.com
+    tls:
+      enabled: true
+      secretName: tls-mqube-playground-com-p
+    paths:
+      - path: /
+        pathType: Prefix
+ 
+  extraEnv:
+
+    # Database connection for stats
+    - name: STATS__DB_URL
+      valueFrom:
+        secretKeyRef:
+          name: blockscout-stats-env
+          key: STATS_DB_URL
+    
+    - name: STATS__BLOCKSCOUT_DB_URL
+      valueFrom:
+        secretKeyRef:
+          name: blockscout-stats-env
+          key: STATS_BLOCKSCOUT_DB_URL
+
+    - name: STATS__CREATE_DATABASE
+      value: "false"
+    - name: STATS__RUN_MIGRATIONS
+      value: "true"
+
+    - name: STATS__BLOCKSCOUT_API_URL
+      value: "https://mqube-blockscout-backend.mqube-playground.com"
+   
+    - name: STATS__FORCE_UPDATE_ON_START
+      value: "true" 
+

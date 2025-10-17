@@ -21,3 +21,19 @@ devnet:
 
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
+
+
+ingress:
+  enabled: true
+  className: nginx
+  labels:
+    solver: azuredns
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hostname: mqube-geth-node.mqube-playground.com
+  tls:
+    enabled: true
+    secretName: tls-mqube-playground-com-p
+  paths:
+    - path: /
+      pathType: Prefix
