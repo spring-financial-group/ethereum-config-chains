@@ -223,3 +223,7 @@ Once deployed, you can view your private network in Blockscout:
 - Kurtosis is optional but extremely useful for generating consistent Ethereum config files.
 - Ensure all three core components (Geth, Beacon, Validator) are running before deploying Blockscout.
 
+## As an example of the configs now been used in a JX config setup this is for Mqube Staging
+
+https://github.com/spring-financial-group/JX3_Azure_Vault_Dev_Cluster/tree/master/helmfiles/jx-staging/configs
+
