@@ -1,0 +1,73 @@
+jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
+
+replicas: 1
+
+extraArgs:
+
+  - --syncmode=full
+  - --snapshot=false 
+  - --gcmode=archive
+  - --txlookuplimit=0  
+
+  - --nodiscover
+  - --maxpeers=0
+
+  - --http.api=eth,net,web3,txpool
+  - --ws.api=eth,net,web3,txpool
+
+  - --authrpc.port=8551
+
+# Expose ALL needed ports on the Service (this is the crucial bit)
+service:
+  type: ClusterIP
+  ports:
+    - name: authrpc
+      port: 8551
+      targetPort: 8551
+      protocol: TCP
+    - name: http
+      port: 8545
+      targetPort: 8545
+      protocol: TCP
+    - name: ws
+      port: 8546
+      targetPort: 8546
+      protocol: TCP
+    - name: p2p-tcp
+      port: 30303
+      targetPort: 30303
+      protocol: TCP
+    - name: p2p-udp
+      port: 30303
+      targetPort: 30303
+      protocol: UDP
+
+
+devnet:
+  enabled: true
+
+
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"
+
+# keep your existing content above…
+
+# Make WS a separate port (optional but recommended)
+httpPort: 8545
+wsPort: 8546
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: mqube-geth-node.mqube-playground.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: tls-mqube-playground-com-p
+      hosts:
+        - mqube-geth-node.mqube-playground.com
+

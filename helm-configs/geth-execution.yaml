@@ -22,24 +22,3 @@ devnet:
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
 
-# keep your existing content above…
-
-# Make WS a separate port (optional but recommended)
-httpPort: 8545
-wsPort: 8546
-
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  hosts:
-    - host: mqube-geth-node.mqube-playground.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: tls-mqube-playground-com-p
-      hosts:
-        - mqube-geth-node.mqube-playground.com
-

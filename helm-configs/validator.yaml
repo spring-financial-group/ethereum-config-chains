@@ -12,7 +12,7 @@ devnet:
 
 
 extraArgs:
-  - --beacon-rpc-provider=beacon-devnet-prysm:4000
+  - --beacon-rpc-provider=beacon-devnet-prysm.default.svc:4000
   - --accept-terms-of-use
   - --wallet-dir=/data/wallet
   - --wallet-password-file=/data/wallet-password.txt

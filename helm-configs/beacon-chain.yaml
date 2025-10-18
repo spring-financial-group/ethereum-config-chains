@@ -3,15 +3,27 @@ jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
 p2pPort: 13001
 
 replicas: 1
+resources:
+  requests:
+    cpu: "2"
+    memory: "2Gi"
+  limits:
+    cpu: "3"
+    memory: "4Gi"
 
 image:
   repository: ethpandaops/prysm-beacon-chain
   tag: develop
 
 extraArgs:
-  - --execution-endpoint=http://geth-devnet:8551
+  - --execution-endpoint=http://geth-devnet.default.svc:8551
   - --accept-terms-of-use
   - --min-sync-peers=0   # don't wait
+
+  # recommended for tiny/dev nets
+  - --subscribe-all-subnets
+
+
 devnet:
   enabled: true
 
