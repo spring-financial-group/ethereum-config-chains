@@ -23,9 +23,6 @@ extraArgs:
   - --http.api=eth,net,web3,txpool
   - --ws.api=eth,net,web3,txpool
 
-  - --verbosity=4 
-  - --vmodule=engine=5
-
   - --cache=1024        # 1Gi cache helps EL build/execute payloads quickly
   - --cache.trie=50
   - --cache.trie.journal=50

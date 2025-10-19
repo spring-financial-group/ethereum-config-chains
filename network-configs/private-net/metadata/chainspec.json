@@ -52,18 +52,6 @@
     "eip1153TransitionTimestamp": "0x0",
     "eip5656TransitionTimestamp": "0x0",
     "eip6780TransitionTimestamp": "0x0",
-    "blobSchedule": {
-      "cancun": {
-        "target": 3,
-        "max": 6,
-        "baseFeeUpdateFraction": 3338477
-      },
-      "prague": {
-        "target": 6,
-        "max": 9,
-        "baseFeeUpdateFraction": 5007716
-      }
-    },
     "depositContractAddress": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
     "eip2537TransitionTimestamp": "0x0",
     "eip2935TransitionTimestamp": "0x0",
@@ -71,7 +59,15 @@
     "eip7002TransitionTimestamp": "0x0",
     "eip7251TransitionTimestamp": "0x0",
     "eip7623TransitionTimestamp": "0x0",
-    "eip7702TransitionTimestamp": "0x0"
+    "eip7702TransitionTimestamp": "0x0",
+    "blobSchedule": [
+      {
+        "timestamp": "0x0",
+        "target": 6,
+        "max": 9,
+        "baseFeeUpdateFraction": "0x4c6964"
+      }
+    ]
   },
   "genesis": {
     "seal": {
@@ -85,7 +81,7 @@
     "timestamp": "0x0",
     "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "extraData": "",
-    "gasLimit": "0x2255100"
+    "gasLimit": "0x2aea540"
   },
   "accounts": {
     "0x0000000000000000000000000000000000000000": {
