@@ -12,7 +12,7 @@
     "berlinBlock": 0,
     "londonBlock": 0,
     "mergeNetsplitBlock": 0,
-    "terminalTotalDifficulty": "0x1",
+    "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": 0,
     "cancunTime": 0,
@@ -928,11 +928,11 @@
     }
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
-  "difficulty": "0x1",
+  "difficulty": "0x0",
   "extraData": "",
   "gasLimit": "0x2aea540",
   "nonce": "0x1234",
   "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "timestamp": "0x68f55e0a"
+  "timestamp": "0"
 }
