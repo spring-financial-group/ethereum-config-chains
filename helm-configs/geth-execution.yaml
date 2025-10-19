@@ -2,6 +2,14 @@ jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
 
 replicas: 1
 
+resources:
+  requests:
+    cpu: "3"
+    memory: "4Gi"
+  limits:
+    cpu: "3"
+    memory: "4Gi"
+
 extraArgs:
 
   - --syncmode=full
@@ -14,6 +22,14 @@ extraArgs:
 
   - --http.api=eth,net,web3,txpool
   - --ws.api=eth,net,web3,txpool
+
+  - --verbosity=4 
+  - --vmodule=engine=5
+
+  - --cache=1024        # 1Gi cache helps EL build/execute payloads quickly
+  - --cache.trie=50
+  - --cache.trie.journal=50
+  - --cache.gc=50
 
 devnet:
   enabled: true

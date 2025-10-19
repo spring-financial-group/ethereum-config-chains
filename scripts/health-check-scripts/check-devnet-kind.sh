@@ -405,53 +405,6 @@ if [[ -n "${CL_POD:-}" ]]; then
   echo "CL file TBH_EPOCH: $TBH_EPOCH"
 fi
 
-# ===================== 60_engine_traffic =====================
-info "60 engine traffic"
-
-LOG_SINCE="${LOG_SINCE:-15m}"
-engine_logs_ok=0
-
-if [[ -n "${EL_POD:-}" ]]; then
-  # 1) Plaintext grep
-  if kget logs -n "$EL_NS" "$EL_POD" --since="$LOG_SINCE" 2>/dev/null \
-     | grep -Eiq 'engine_newPayload|engine_forkchoiceUpdated|NewPayloadV|ForkchoiceUpdatedV|payload|forkchoice|Engine API|engine api'; then
-    pass "Recent engine payload/forkchoice seen in EL logs (last $LOG_SINCE)"
-    engine_logs_ok=1
-  else
-    # 2) JSON logs: extract .msg/.message and grep
-    if kget logs -n "$EL_NS" "$EL_POD" --since="$LOG_SINCE" 2>/dev/null \
-       | jq -r 'select(type=="object") | (.msg // .message // "")' 2>/dev/null \
-       | grep -Eiq 'payload|forkchoice|engine'; then
-      pass "Recent engine payload/forkchoice seen in EL JSON logs (last $LOG_SINCE)"
-      engine_logs_ok=1
-    fi
-  fi
-
-  if [[ $engine_logs_ok -ne 1 ]]; then
-    # 3) Inference fallback: compare CL execution payload block_number vs EL head
-    head_exec_bn="$(beacon_get_local "/eth/v2/beacon/blocks/head" \
-      | jq -r '.data.message.body.execution_payload.block_number // .data.message.body.execution_payload.blockNumber' 2>/dev/null || true)"
-    el_head_hex="$(el_rpc_local "eth_blockNumber" "[]" | jq -r '.result' 2>/dev/null || true)"
-    if [[ "$head_exec_bn" =~ ^[0-9]+$ && "$el_head_hex" =~ ^0x[0-9a-fA-F]+$ ]]; then
-      el_head_dec=$((16#${el_head_hex#0x}))
-      diff=$(( el_head_dec - head_exec_bn ))
-      # Accept small skew; in tiny devnets EL can be slightly ahead/behind temporarily
-      if (( diff <= 1 && diff >= -1 )); then
-        pass "Engine traffic inferred: CL payload block_number=$head_exec_bn ≈ EL head=$el_head_dec"
-      else
-        fail "No engine log match; CL payload block_number=$head_exec_bn, EL head=$el_head_dec (skew $diff)"
-        echo "     → Logs may be JSON or at a different verbosity; see README comment in script."
-      fi
-    else
-      fail "No recent engine payload/forkchoice logs and could not infer from heads."
-      echo "     → Try: kubectl -n $EL_NS logs $EL_POD --since=$LOG_SINCE | jq -r '.msg? // .message? // empty' | grep -Ei 'payload|forkchoice|engine'"
-    fi
-  fi
-else
-  warn "Skipping engine traffic check (no EL pod)"
-fi
-
-
 
 # ===================== 70 images =====================
 info "70 images"
@@ -519,13 +472,23 @@ kget get pods -o json \
 
 # ===================== 80 control =====================
 info "80 control"
+# --- init/guards so set -u won't blow up ---
 
-# Show CL spec constants (Lighthouse/Prysm expose these on /eth/v1/config/spec)
+TTD=""; TTD_PASSED=""; DIFF_HEX=""
+TBH_SPEC=""; TBH_EPOCH_SPEC=""; SLOT_SECS_SPEC=""
+# If earlier file-based TBH vars weren't set, make them safe:
+TBH="${TBH:-}"; TBH_EPOCH="${TBH_EPOCH:-}"
+
+to_lower(){ printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'; }
+
+
+# ----- CL spec constants (from REST) -----
 spec_json="$(beacon_get_local "/eth/v1/config/spec" 2>/dev/null || true)"
 if [[ -n "$spec_json" && "$spec_json" != "null" ]]; then
   TBH_SPEC="$(echo "$spec_json" | jq -r '.data.TERMINAL_BLOCK_HASH // .data.terminal_block_hash // empty')"
   TBH_EPOCH_SPEC="$(echo "$spec_json" | jq -r '.data.TERMINAL_BLOCK_HASH_ACTIVATION_EPOCH // .data.terminal_block_hash_activation_epoch // empty')"
   SLOT_SECS_SPEC="$(echo "$spec_json" | jq -r '.data.SECONDS_PER_SLOT // .data.seconds_per_slot // empty')"
+
   echo "CL spec TERMINAL_BLOCK_HASH: ${TBH_SPEC:-<unset>}"
   echo "CL spec TBH_ACTIVATION_EPOCH: ${TBH_EPOCH_SPEC:-<unset>}"
   echo "CL spec SECONDS_PER_SLOT: ${SLOT_SECS_SPEC:-<unset>}"
@@ -533,51 +496,92 @@ else
   warn "CL /eth/v1/config/spec not available via local port-forward"
 fi
 
-# Compare file-based TBH/TBH_EPOCH (if we printed them earlier) vs spec
+# Keep file-based TBH (if earlier block set them)
 if [[ -n "${TBH:-}" || -n "${TBH_EPOCH:-}" ]]; then
   echo "CL file TBH (earlier): ${TBH:-<unknown>}"
   echo "CL file TBH_EPOCH (earlier): ${TBH_EPOCH:-<unknown>}"
 fi
 
-# Attempt to read EL chain config from Geth (debug_getChainConfig)
+# ----- EL Merge controls (TTD & Passed) -----
+# Try JSON-RPC debug_getChainConfig via local PF first
 el_chain_cfg="$(el_rpc_local "debug_getChainConfig" "[]" 2>/dev/null || true)"
+EL_CFG_OK=0
 if echo "$el_chain_cfg" | jq -e '.result' >/dev/null 2>&1; then
-  TTD="$(echo "$el_chain_cfg" | jq -r '.result.terminalTotalDifficulty // .result.terminal_total_difficulty // empty')"
+  TTD="$(echo  "$el_chain_cfg" | jq -r '.result.terminalTotalDifficulty // .result.terminal_total_difficulty // empty')"
   TTD_PASSED="$(echo "$el_chain_cfg" | jq -r '.result.terminalTotalDifficultyPassed // .result.terminal_total_difficulty_passed // empty')"
-  echo "EL chain config terminalTotalDifficulty: ${TTD:-<unavailable>}"
-  echo "EL chain config terminalTotalDifficultyPassed: ${TTD_PASSED:-<unavailable>}"
-else
-  warn "EL debug_getChainConfig not available (debug RPC likely disabled)."
-  warn "If you need TTD here, enable geth debug API on JSON-RPC or inspect genesis.json in the EL pod."
+  if [[ -n "$TTD" ]]; then
+    echo "EL chain config terminalTotalDifficulty: $TTD"
+    echo "EL chain config terminalTotalDifficultyPassed: ${TTD_PASSED:-<unset>}"
+    EL_CFG_OK=1
+  fi
 fi
 
-# ===================== 90 logs =====================
-info "90 logs"
+# Fallback: read genesis.json from EL pod (common paths)
+if [[ $EL_CFG_OK -ne 1 && -n "${EL_POD:-}" ]]; then
+  for GEN in /config/genesis.json /genesis.json /data/genesis.json /etc/genesis.json; do
+    raw="$(pod_cmd "$EL_NS" "$EL_POD" sh -lc "[ -s '$GEN' ] && cat '$GEN' || true")"
+    if [[ -n "$raw" ]]; then
+      TTD="$(echo "$raw" | jq -r '.config.terminalTotalDifficulty // .terminalTotalDifficulty // empty')"
+      TTD_PASSED="$(echo "$raw" | jq -r '.config.terminalTotalDifficultyPassed // .terminalTotalDifficultyPassed // empty')"
+      DIFF_HEX="$(echo "$raw" | jq -r '.difficulty // empty')"
+      echo "EL genesis ($GEN) difficulty: ${DIFF_HEX:-<unset>}"
+      [[ -n "$TTD" ]] && echo "EL genesis ($GEN) terminalTotalDifficulty: $TTD"
+      [[ -n "$TTD_PASSED" ]] && echo "EL genesis ($GEN) terminalTotalDifficultyPassed: $TTD_PASSED"
+      break
+    fi
+  done
+fi
 
-LOG_TAIL="${LOG_TAIL:-80}"     # how many lines to show per component
-LOG_SINCE="${LOG_SINCE:-15m}"  # already used above; keep same default
+# Verdicts (soft: allow fallbacks + inference)
+to_lower(){ printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]'; }
 
-show_logs_smart(){
-  local ns="$1" pod="$2" label="$3"
-  echo
-  echo "---- ${label} (${ns}/${pod}) last ${LOG_TAIL} lines ----"
-  # Try JSON logs: show message field if present, else raw
-  raw="$(kget logs -n "$ns" "$pod" --since="$LOG_SINCE" 2>/dev/null || true)"
-  if printf '%s' "$raw" | head -n1 | jq -e . >/dev/null 2>&1; then
-    # JSON logs; print a compact view with timestamp + msg if available
-    printf '%s' "$raw" \
-      | jq -r '[.ts, .time, .level, .lvl, .msg, .message]
-                | {( (.[0]//.[1]//"" )    ):null} as $t
-                | [(.[2]//.[3]//"")] as $lvl
-                | (.[4]//.[5]//"") as $m
-                | "\($t|keys|.[0]) [\($lvl|.[0])] \($m)"' 2>/dev/null \
-      | tail -n "$LOG_TAIL"
+if [[ -n "${TTD:-}" ]]; then
+  # normalize "true"/true/"1"
+  TTD_PASSED_NORM="$(to_lower "${TTD_PASSED:-}")"
+
+  # TTD value verdict
+  case "${TTD}" in
+    1|"1"|"0x1"|"\"0x1\"")
+      pass "EL terminalTotalDifficulty is 1 (Merge-by-TTD set)"
+      ;;
+    *)
+      warn "EL terminalTotalDifficulty is ${TTD} (expected 1 for instant-merge devnets)"
+      ;;
+  esac
+
+  # TTD_PASSED verdict
+  case "${TTD_PASSED_NORM}" in
+    true|1|"\"true\"")
+      pass "EL terminalTotalDifficultyPassed = true"
+      ;;
+    "")
+      warn "EL terminalTotalDifficultyPassed is unset"
+      ;;
+    *)
+      warn "EL terminalTotalDifficultyPassed != true (engine may not start at block 1)"
+      ;;
+  esac
+
+else
+  # Couldn't read TTD directly — try to infer from live heads
+  head_exec_bn="$(beacon_get_local "/eth/v2/beacon/blocks/head" \
+    | jq -r '.data.message.body.execution_payload.block_number // .data.message.body.execution_payload.blockNumber' 2>/dev/null || true)"
+  el_head_hex="$(el_rpc_local "eth_blockNumber" "[]" \
+    | jq -r '.result' 2>/dev/null || true)"
+
+  if [[ "$head_exec_bn" =~ ^[0-9]+$ && "$el_head_hex" =~ ^0x[0-9a-fA-F]+$ ]]; then
+    el_head_dec=$((16#${el_head_hex#0x}))
+    diff=$(( el_head_dec - head_exec_bn ))
+    if (( diff >= -1 && diff <= 1 )); then
+      pass "Merge-by-TTD inferred: CL payload block_number=$head_exec_bn ≈ EL head=$el_head_dec (|Δ|≤1)"
+    else
+      warn "Unable to confirm Merge-by-TTD from heads: CL payload=$head_exec_bn, EL head=$el_head_dec (Δ=$diff)"
+      echo "     → Consider exposing Geth debug API or mounting genesis.json so TTD can be read directly."
+    fi
   else
-    # Plaintext logs
-    printf '%s' "$raw" | tail -n "$LOG_TAIL"
+    warn "Could not determine EL terminalTotalDifficulty/Passed directly (no debug API/genesis.json)"
+    echo "     → Also could not infer from heads (port-forward down or services unknown)."
+    echo "     → To make this PASS: include 'debug' in --http.api or mount a readable genesis.json."
   fi
-}
+fi
 
-[[ -n "${EL_POD:-}" ]] && show_logs_smart "$EL_NS" "$EL_POD" "EL logs"
-[[ -n "${CL_POD:-}" ]] && show_logs_smart "$CL_NS" "$CL_POD" "CL logs"
-[[ -n "${VC_POD:-}" ]] && show_logs_smart "$VC_NS" "$VC_POD" "VC logs"

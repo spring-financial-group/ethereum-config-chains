@@ -17,6 +17,8 @@ export CL_SVC="${CL_SVC:-beacon-devnet-prysm}"
 export EL_CONT="${EL_CONT:-}"
 export CL_CONT="${CL_CONT:-}"
 export VC_CONT="${VC_CONT:-}"
+export CL_POD="${CL_POD:-}"
+export CL_NS="${CL_NS:-}"
 
 # Ports
 export AUTHRPC_PORT="${AUTHRPC_PORT:-8551}"

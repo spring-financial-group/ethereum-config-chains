@@ -3,10 +3,11 @@ jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
 p2pPort: 13001
 
 replicas: 1
+
 resources:
   requests:
-    cpu: "2"
-    memory: "2Gi"
+    cpu: "3"
+    memory: "4Gi"
   limits:
     cpu: "3"
     memory: "4Gi"

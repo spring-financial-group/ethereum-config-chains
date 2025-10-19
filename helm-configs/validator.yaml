@@ -4,6 +4,14 @@ p2pPort: 13001
 
 mode: "validator"
 
+resources:
+  requests:
+    cpu: "2"
+    memory: "3Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"
+
 devnet:
   enabled: true
 
@@ -16,6 +24,8 @@ extraArgs:
   - --accept-terms-of-use
   - --wallet-dir=/data/wallet
   - --wallet-password-file=/data/wallet-password.txt
+
+  - --suggested-fee-recipient=0x0000000000000000000000000000000000000001
 
 replicas: 1
 
