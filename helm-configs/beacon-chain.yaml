@@ -17,7 +17,7 @@ image:
   tag: develop
 
 extraArgs:
-  - --execution-endpoint=http://geth-devnet.default.svc:8551
+  - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=0   # don't wait
 
