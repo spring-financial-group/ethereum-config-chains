@@ -18,20 +18,20 @@ cp "$(ls "$TEKU_SECRETS"/0x*.txt | head -n1)" ./prysm-password.txt
 #     Still provide a fallback prysm-password.txt (pick any one, or type yours):
 cp "$(ls "$TEKU_SECRETS"/0x*.txt | head -n1)" ./prysm-password.txt
 
-# 4) Recreate the Secret in the *default* namespace (that’s where your validator reads it)
-kubectl -n default delete secret validator-keystores --ignore-not-found
+# 4) Recreate the Secret in the *devnet* namespace (that’s where your validator reads it)
+kubectl -n devnet delete secret validator-keystores --ignore-not-found
 
 # Single password only:
-# kubectl -n default create secret generic validator-keystores \
+# kubectl -n devnet create secret generic validator-keystores \
 #   --from-file=keystores.tar.gz=./keystores.tar.gz \
 #   --from-file=prysm-password.txt=./prysm-password.txt
 
 # Single + per-key overrides (adds all 0x*.txt files from teku-secrets):
-kubectl -n default create secret generic validator-keystores \
+kubectl -n devnet create secret generic validator-keystores \
   --from-file=keystores.tar.gz=./keystores.tar.gz \
   --from-file=prysm-password.txt=./prysm-password.txt \
   $(for f in "$TEKU_SECRETS"/0x*.txt; do [ -f "$f" ] && echo --from-file="$(basename "$f")=$f"; done)
 
 # 5) Sanity check: you should see keystores.tar.gz, prysm-password.txt, and lots of 0x....txt entries
-kubectl -n default describe secret validator-keystores | sed -n '1,120p'
+kubectl -n devnet describe secret validator-keystores | sed -n '1,120p'
 
