@@ -246,7 +246,8 @@ This secret stores database credentials for the Blockscout Helm chart:
 ### 4. Install Blockscout
 
 ```bash
-helm upgrade --install blockscout blockscout/blockscout-stack   -n default -f helm-configs/blockscout-stack.yaml
+
+ helm upgrade --install blockscout blockscout/blockscout-stack   -n devnet -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/blockscout-stack.yaml
 ```
 
 > 🛈 You may see warnings about environment variables being overridden — this is expected due to how the chart merges environment configs.
