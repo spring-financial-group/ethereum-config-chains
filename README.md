@@ -121,9 +121,11 @@ Docker Kurtosis [Overview](docker-kurtosis/docker-kurtosis.md)
 To install the **Geth execution node** locally or on the Playground OSS cluster:
 
 ```bash
+
 helm upgrade --install geth-devnet ethpandaops/geth \
   -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/geth-execution.yaml \
   --namespace devnet --create-namespace
+
 ```
 
 > 💡 Use the Helm chart directly from `ethpandaops/ethereum-helm-charts`, or reference it from this repo.  
@@ -132,7 +134,11 @@ helm upgrade --install geth-devnet ethpandaops/geth \
 ### Beacon Node
 
 ```bash
-helm upgrade --install beacon-devnet .   -f helm-configs/beacon-chain.yaml
+
+ helm upgrade --install beacon-devnet ethpandaops/prysm \
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/beacon-chain.yaml \
+  --namespace devnet --create-namespace
+
 ```
 
 ### Validator Node
