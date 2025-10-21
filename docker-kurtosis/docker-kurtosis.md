@@ -1,4 +1,4 @@
-# You can create and downlaod the files like below passing in config files there are some example config files
+# You can create and download the files like below passing in config files there are some example config files
 
 1. **Ensure EL genesis exists** (creates `out/metadata/genesis.json`):
 
