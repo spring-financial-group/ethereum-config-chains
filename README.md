@@ -106,10 +106,11 @@ kurtosis files download my-testnet el_cl_genesis_data ./out/el_cl_genesis_data
 
 These are the files uploaded to this repo under `/network-configs`, replacing the testnet files from the Helm chart.
 
-## If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
-## can use the docker containers they (kurtosis) use and run them directly
+## Kurtosis Docker
+If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
+can use the docker containers they (kurtosis) use and run them directly
 
-[Docker Kurtosis]: docker-kurtosis/docker-kurtosis.md
+Docker Kurtosis [Overview]: docker-kurtosis/docker-kurtosis.md
 ---
 
 ## 🏗️ Deploying the Private Network (Execution, Beacon, Validator)
