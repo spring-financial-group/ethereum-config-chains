@@ -1,5 +1,9 @@
 # 🧭 Geth Private Network Setup (Local & Playground OSS)
 
+## If you want to try this from scratch read this section about clearing up 
+
+Clearing everythign down and starting from scratch [Overview](clean-up.md)
+
 This document provides step-by-step instructions for installing and running a **Geth private Ethereum network**, both **locally** (using Kind and Kurtosis) and on **mqube-playground.com** (the test OSS cluster).
 
 ---
