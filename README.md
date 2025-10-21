@@ -106,6 +106,19 @@ kurtosis files download my-testnet el_cl_genesis_data ./out/el_cl_genesis_data
 
 These are the files uploaded to this repo under `/network-configs`, replacing the testnet files from the Helm chart.
 
+### 📁 Download Generated Keys files
+
+
+Kurtosis doesn't produce the key files as part of the config download we do above , it doesn't actually produce them as enclave files so you can use 
+kurtosis files download 
+You need to downloand them from the image on the cluster 
+
+There are some scripts to help do this 
+
+```bash
+./scripts/getKurtosisKeys.sh 
+```
+
 ## Kurtosis Docker
 If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
 can use the docker containers they (kurtosis) use and run them directly
