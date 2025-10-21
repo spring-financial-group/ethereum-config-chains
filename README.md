@@ -205,9 +205,18 @@ We deploy it on the **playground OSS cluster**.
 
 ### 1. Install PostgreSQL
 
+Install a secret first that psotgress will use 
+
 ```bash
 
-helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/postgresql   -n default -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/block-postgresql.yaml
+kubectl apply -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/blockscout-db-auth.secret.yaml  --namespace devnet
+
+```
+
+
+```bash
+
+helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/postgresql   -n devnet -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/block-postgresql.yaml
 
 ```
 
