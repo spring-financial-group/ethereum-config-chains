@@ -131,6 +131,10 @@ Then we need to create the secret itself with the JSON key files and the Passwor
 This secret is referenced from the validator init containers to import all the accounts to use for validation these accounts are the accounts used in genesis.ssz which was generated as part of the config files above
 
 
+You can see the init containers logic for importing these secrets here 
+
+helm-configs/validator.yaml 
+
 ## Kurtosis Docker
 If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
 can use the docker containers they (kurtosis) use and run them directly
