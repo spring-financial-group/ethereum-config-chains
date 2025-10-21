@@ -106,6 +106,12 @@ kurtosis files download my-testnet el_cl_genesis_data ./out/el_cl_genesis_data
 
 These are the files uploaded to this repo under `/network-configs`, replacing the testnet files from the Helm chart.
 
+## Kurtosis Docker
+If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
+can use the docker containers they (kurtosis) use and run them directly
+
+Docker Kurtosis [Overview](docker-kurtosis/docker-kurtosis.md)
+
 ---
 
 ## 🏗️ Deploying the Private Network (Execution, Beacon, Validator)
@@ -115,7 +121,11 @@ These are the files uploaded to this repo under `/network-configs`, replacing th
 To install the **Geth execution node** locally or on the Playground OSS cluster:
 
 ```bash
-helm upgrade --install geth-devnet .   -f helm-configs/geth-execution.yaml
+
+helm upgrade --install geth-devnet ethpandaops/geth \
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/geth-execution.yaml \
+  --namespace devnet --create-namespace
+
 ```
 
 > 💡 Use the Helm chart directly from `ethpandaops/ethereum-helm-charts`, or reference it from this repo.  
@@ -124,13 +134,21 @@ helm upgrade --install geth-devnet .   -f helm-configs/geth-execution.yaml
 ### Beacon Node
 
 ```bash
-helm upgrade --install beacon-devnet .   -f helm-configs/beacon-chain.yaml
+
+ helm upgrade --install beacon-devnet ethpandaops/prysm \
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/beacon-chain.yaml \
+  --namespace devnet --create-namespace
+
 ```
 
 ### Validator Node
 
 ```bash
-helm upgrade --install validator-devnet .   -f helm-configs/validator.yaml
+
+helm upgrade --install validator-devnet ethpandaops/prysm \
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/validator.yaml \   
+  --namespace devnet --create-namespace
+
 ```
 
 These three components—**Geth**, **Beacon**, and **Validator**—together form a complete **Proof-of-Stake (PoS)** Ethereum private network.
