@@ -1,5 +1,5 @@
 # 1) Point to your run folder
-RUN_DIR="./out/validator-keys"
+RUN_DIR="scripts"
 KEYSTORE_DIR="$RUN_DIR/nimbus-keys"     # folders named 0xPUBKEY/keystore-*.json
 TEKU_SECRETS="$RUN_DIR/teku-secrets"    # contains 0xPUBKEY.txt password files
 

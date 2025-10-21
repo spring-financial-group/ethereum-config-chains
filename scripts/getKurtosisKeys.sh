@@ -1,5 +1,5 @@
 # --- set enclave name
-ENCLAVE=my-enclave
+ENCLAVE=devnet-ref
 
 # local output dirs
 mkdir -p validator_keys/vc validator_keys/keygen
