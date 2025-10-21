@@ -144,7 +144,11 @@ helm upgrade --install geth-devnet ethpandaops/geth \
 ### Validator Node
 
 ```bash
-helm upgrade --install validator-devnet .   -f helm-configs/validator.yaml
+
+helm upgrade --install validator-devnet ethpandaops/prysm \
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/validator.yaml \   
+  --namespace devnet --create-namespace
+
 ```
 
 These three components—**Geth**, **Beacon**, and **Validator**—together form a complete **Proof-of-Stake (PoS)** Ethereum private network.
