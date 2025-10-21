@@ -109,8 +109,10 @@ These are the files uploaded to this repo under `/network-configs`, replacing th
 ### 📁 Download Generated Keys files
 
 
-Kurtosis doesn't produce the key files as part of the config download we do above , it doesn't actually produce them as enclave files so you can use 
+Kurtosis doesn't produce the key files as part of the config download we do above , it doesn't actually produce them as enclave files so you can't use 
+
 kurtosis files download 
+
 You need to downloand them from the image on the cluster 
 
 There are some scripts to help do this 
@@ -118,6 +120,16 @@ There are some scripts to help do this
 ```bash
 ./scripts/getKurtosisKeys.sh 
 ```
+
+Then we need to create the secret itself with the JSON key files and the Password file
+
+```bash
+
+./scripts/createSecretFromKeys.sh
+
+```
+This secret is referenced from the validator init containers to import all the accounts to use for validation these accounts are the accounts used in genesis.ssz which was generated as part of the config files above
+
 
 ## Kurtosis Docker
 If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
