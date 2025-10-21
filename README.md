@@ -110,7 +110,8 @@ These are the files uploaded to this repo under `/network-configs`, replacing th
 If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
 can use the docker containers they (kurtosis) use and run them directly
 
-Docker Kurtosis [Overview]: docker-kurtosis/docker-kurtosis.md
+Docker Kurtosis [Overview](docker-kurtosis/docker-kurtosis.md)
+
 ---
 
 ## 🏗️ Deploying the Private Network (Execution, Beacon, Validator)
