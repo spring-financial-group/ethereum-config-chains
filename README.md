@@ -121,7 +121,9 @@ Docker Kurtosis [Overview](docker-kurtosis/docker-kurtosis.md)
 To install the **Geth execution node** locally or on the Playground OSS cluster:
 
 ```bash
-helm upgrade --install geth-devnet .   -f helm-configs/geth-execution.yaml
+helm upgrade --install geth-devnet ethpandaops/geth \
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/geth-execution.yaml \
+  --namespace devnet --create-namespace
 ```
 
 > 💡 Use the Helm chart directly from `ethpandaops/ethereum-helm-charts`, or reference it from this repo.  
