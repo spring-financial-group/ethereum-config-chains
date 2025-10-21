@@ -138,6 +138,8 @@ This secret is referenced from the validator init containers to import all the a
 You can see the init containers logic for importing these secrets here 
 
 helm-configs/validator.yaml 
+See the [validator config](helm-configs/validator.yaml) for details.
+
 
 ## Kurtosis Docker
 If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
