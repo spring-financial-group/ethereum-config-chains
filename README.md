@@ -149,6 +149,8 @@ Docker Kurtosis [Overview](docker-kurtosis/docker-kurtosis.md)
 
 ## 🏗️ Deploying the Private Network (Execution, Beacon, Validator)
 
+## Read the clearing up section , but if you want to use the config files in this repo then you can and miss the steps above , but read the clear up section to understand this and if not and your producing the config files remember to push back to main on this report or change you helm-config yaml files to use a local directoy instead of this repo 
+
 ### Geth (Execution Node)
 
 To install the **Geth execution node** locally or on the Playground OSS cluster:
