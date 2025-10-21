@@ -2,29 +2,29 @@
 
 ## If you want to try this from scratch inform everyone on Slack (Block chain channels) that you are going to do this an uninstall everythign and re-deploy 
 
-'''bash
+```bash
 
 helm list -n devnet
 
-'''
+```
 
 Then just 
 
-''' bash
+```bash
 
 helm uninstall XXX
 
-'''
+```
 
 All the helm files from the helm list
 
 Delete the postgress PVC to clear the DB's up (They will be re-created as part of the installs)
 
-'''bash
+```bash
 
 kubectl delete pvc data-blockscout-db-postgresql-0
 
-'''
+```
 
 And that shoudl be a clean envionment to start from scratch.
 
