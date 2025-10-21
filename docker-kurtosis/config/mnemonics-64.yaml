@@ -1,0 +1,7 @@
+# mnemonics-64.yaml  (no top-level key)
+- mnemonic: "test test test test test test test test test test test junk"
+  count: 64
+  offset: 0
+  path: "m/12381/3600/{index}/0/0"   # default Prysm/consensus path; keep as-is
+  # password: ""                     # optional; omit if not using one
+
