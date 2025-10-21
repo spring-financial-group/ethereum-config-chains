@@ -138,6 +138,8 @@ This secret is referenced from the validator init containers to import all the a
 You can see the init containers logic for importing these secrets here 
 
 helm-configs/validator.yaml 
+See the [validator config](helm-configs/validator.yaml) for details.
+
 
 ## Kurtosis Docker
 If you decide it was too much to use kind and install kurtosis (I would though as it's much easier using kind and Kurtosis) you
@@ -204,7 +206,9 @@ We deploy it on the **playground OSS cluster**.
 ### 1. Install PostgreSQL
 
 ```bash
-helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/postgresql   -n default -f helm-configs/block-postgresql.yaml
+
+helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/postgresql   -n default -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/block-postgresql.yaml
+
 ```
 
 > ⚠️ When uninstalling, remember to delete the PVC to ensure a clean database reset:
@@ -242,7 +246,8 @@ This secret stores database credentials for the Blockscout Helm chart:
 ### 4. Install Blockscout
 
 ```bash
-helm upgrade --install blockscout blockscout/blockscout-stack   -n default -f helm-configs/blockscout-stack.yaml
+
+ helm upgrade --install blockscout blockscout/blockscout-stack   -n devnet -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/blockscout-stack.yaml
 ```
 
 > 🛈 You may see warnings about environment variables being overridden — this is expected due to how the chart merges environment configs.
