@@ -54,7 +54,7 @@ check_flag(){
   local flag="$1" ; shift
   if grep -qi -- "$flag" <<<"$ARGS$CMD"; then pass "Beacon flag present: $flag"; else warn "Beacon flag missing: $flag"; fi
 }
-check_flag "--execution-endpoint=http://$EL_SVC.default.svc:$AUTHRPC_PORT"
+check_flag "--execution-endpoint=http://$EL_SVC:$AUTHRPC_PORT"
 check_flag "--jwt-secret=$CL_JWT_PATH"
 check_flag "--min-sync-peers=0"
 check_flag "--subscribe-all-subnets"
@@ -70,12 +70,12 @@ else
 fi
 
 # TCP tests (both short & FQDN)
-for host in "$EL_SVC:8551" "$EL_SVC.default.svc:8551"; do
+for host in "$EL_SVC:8551" "$EL_SVC:8551"; do
   H="${host%:*}"; P="${host#*:}"
   [ "$(tcp "$CL_POD" "$CL_CTN" "$H" "$P")" = "OK" ] && pass "Beacon → EL TCP $H:$P OK" || fail "Beacon → EL TCP $H:$P FAIL"
 done
 if [ -n "${VC_POD:-}" ]; then
-  for host in "$CL_SVC:4000" "$CL_SVC.default.svc:4000"; do
+  for host in "$CL_SVC:4000" "$CL_SVC:4000"; do
     H="${host%:*}"; P="${host#*:}"
     [ "$(tcp "$VC_POD" "$VC_CTN" "$H" "$P")" = "OK" ] && pass "Validator → Beacon TCP $H:$P OK" || fail "Validator → Beacon TCP $H:$P FAIL"
   done
@@ -269,7 +269,7 @@ kubectl logs -n "$NS" "$EL_POD" -c "$EL_CTN" --tail=120 | egrep -i 'forkchoice|n
 echo "---- CL (exec/validator RPC) tail ----"
 kubectl logs -n "$NS" "$CL_POD" -c "$CL_CTN" --tail=120 | egrep -i 'execution|engine|endpoint|rpc/validator|deadline|process slots|parent state|error' || true
 
-BLOCK0=$(kubectl exec -n default geth-devnet-0 -c geth -- sh -lc \
+BLOCK0=$(kubectl exec -n "$NS" geth-devnet-0 -c geth -- sh -lc \
  'apk add -q curl jq || true; curl -s -H "Content-Type: application/json" \
  --data '"'"'{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["0x0", false],"id":1}'"'"' \
  http://localhost:8545 | jq -r .result.hash')
