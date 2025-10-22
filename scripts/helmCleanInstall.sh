@@ -30,8 +30,10 @@ sleep 5
 
 kubectl apply -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/blockscout-db-auth.secret.yaml  --namespace "$NS"
 
-helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/postgresql   -n default -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/block-postgresql.yaml -n "$NS"
+helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/postgresql   -n "$NS" -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/block-postgresql.yaml -n "$NS"
 
+
+sleep 120
 
 ./createStatsDB.sh
 
