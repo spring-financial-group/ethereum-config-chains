@@ -275,7 +275,7 @@ You will also be exposing the geth-node over rpc-geth-node.mqube-playground.com:
 
 You can test this end point using the below
 
-bash```
+```bash
 
 curl -sS -H 'Content-Type: application/json' \
   --data '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":1}' \
