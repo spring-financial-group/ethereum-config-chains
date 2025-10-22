@@ -10,6 +10,27 @@ resources:
     cpu: "3"
     memory: "4Gi"
 
+ingress:
+  enabled: true
+  className: nginx          # or your ingressClassName (e.g. traefik)
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  hosts:
+    - host: rpc-geth-node.mqube-playground.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+
+  tls:
+    - hosts:
+        - rpc-geth-node.mqube-playground.com
+        - ws-geth-node.mqube-playground.com
+      secretName: tls-mqube-playground-com-p
+
+
 extraArgs:
 
   - --syncmode=full
@@ -27,6 +48,17 @@ extraArgs:
   - --cache.trie=50
   - --cache.trie.journal=50
   - --cache.gc=50
+
+  - --http
+  - --http.addr=0.0.0.0
+  - --http.port=8545
+  - --http.vhosts=*
+  - --http.corsdomain=*
+
+  - --ws
+  - --ws.addr=0.0.0.0
+  - --ws.port=8545
+  - --ws.origins=*
 
 devnet:
   enabled: true
