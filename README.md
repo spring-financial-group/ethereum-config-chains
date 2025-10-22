@@ -269,6 +269,20 @@ Once deployed, you can view your private network in Blockscout:
 
 👉 [https://mqube-blockscout-frontend.mqube-playground.com/](https://mqube-blockscout-frontend.mqube-playground.com/)
 
+You will also be exposing the geth-node over rpc-geth-node.mqube-playground.com:
+
+👉 [https://rpc-geth-node.mqube-playground.com/](https://rpc-geth-node.mqube-playground.com/)
+
+You can test this end point using the below
+
+bash```
+
+curl -sS -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":1}' \
+  https://rpc-geth-node.mqube-playground.com
+
+```
+
 ---
 
 ## ✅ Summary
