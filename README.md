@@ -223,7 +223,7 @@ helm upgrade --install blockscout-db oci://registry-1.docker.io/bitnamicharts/po
 > ⚠️ When uninstalling, remember to delete the PVC to ensure a clean database reset:
 
 ```bash
-kubectl delete pvc data-blockscout-db-postgresql-0
+kubectl delete pvc data-blockscout-db-postgresql-0 -n devnet
 ```
 
 This ensures that your next deployment starts with a fresh, empty database.
