@@ -1,0 +1,16 @@
+{
+  "mnemonic": "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete",
+  "derivation_path": "m/44'/60'/0'/0/{index}",
+  "accounts": [
+    {"index": 0, "address": "0x8943545177806ED17B9F23F0a21ee5948eCaa776", "privateKey": "0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31"},
+    {"index": 1, "address": "0xE25583099BA105D9ec0A67f5Ae86D90e50036425", "privateKey": "0x39725efee3fb28614de3bacaffe4cc4bd8c436257e2c8bb887c4b5c4be45e76d"},
+    {"index": 2, "address": "0x614561D2d143621E126e87831AEF287678B442b8", "privateKey": "0x53321db7c1e331d93a11a41d16f004d7ff63972ec8ec7c25db329728ceeb1710"},
+    {"index": 3, "address": "0xf93Ee4Cf8c6c40b329b0c0626F28333c132CF241", "privateKey": "0xab63b23eb7941c1251757e24b3d2350d2bc05c3c388d06f8fe6feafefb1e8c70"},
+    {"index": 4, "address": "0x802dCbE1B1A97554B4F50DB5119E37E8e7336417", "privateKey": "0x47bfbc279f6de0b6f8828301c5f6d236ae31c2ef030e23fc4fafd1cf1b4f5cee"},
+    {"index": 5, "address": "0xAe95d8DA9244C37CaC0a3e16BA966a8e852Bb6D6", "privateKey": "0x6a36c31b2d96e0699c6e5e9f920fb096ed83e996c7e78368b0e98e08d1c709f1"},
+    {"index": 6, "address": "0x2c57d1CFC6d5f8E4182a56b4cf75421472eBAEa4", "privateKey": "0x5c6155c50e1f0371a239e8f8b3f94c0394f1e5a8b6d22b5c59ab87f2f1d63e3c"},
+    {"index": 7, "address": "0x741bFE4802cE1C4b5b00F9Df2F5f179A1C89171A", "privateKey": "0x5da5d2f1c645e2a7f6a598f6a77f98b6c4c1f79cd5f0d5e3e3a7e1b8b6e0c7f3"},
+    {"index": 8, "address": "0xc3913d4D8bAb4914328651C2EAE817C8b78E1f4c", "privateKey": "0x3de4f8a4b4e1a24f6cbbe4a3f1a6e3d4e6f8a2b3c5d6e7f8a9b0c1d2e3f4a5b6"},
+    {"index": 9, "address": "0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA", "privateKey": "0x4a8f3e7c2d1b6e5a9c8f7d6e5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d7c6"}
+  ]
+}
