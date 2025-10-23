@@ -1,37 +1,113 @@
-# 1) Point to your run folder
-RUN_DIR="scripts"
-KEYSTORE_DIR="$RUN_DIR/nimbus-keys"     # folders named 0xPUBKEY/keystore-*.json
-TEKU_SECRETS="$RUN_DIR/teku-secrets"    # contains 0xPUBKEY.txt password files
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-# 2) Create the keystore tarball (Nimbus layout)
-tar -czf keystores.tar.gz -C "$KEYSTORE_DIR" .
+# =========================
+# Config
+# =========================
+: "${NAMESPACE:=devnet}"
+: "${SECRET_NAME:=validator-keystores}"
 
-# 3) Choose your password strategy:
+# Paths (from getKurtosisKeys.sh output)
+KEYSTORE_TAR="./keystores.tar.gz"
+PRYSM_PASSWORD="./prysm-password.txt"
+TEKU_SECRETS_DIR="./teku-secrets"
 
-# (A) Single password for all keys -> make prysm-password.txt
-#     If all keys share the same password, reuse one of the Teku txt files:
-cp "$(ls "$TEKU_SECRETS"/0x*.txt | head -n1)" ./prysm-password.txt
+# =========================
+# Pre-flight checks
+# =========================
+echo "=== Pre-flight checks ==="
 
-# --OR--
+if [ ! -f "$KEYSTORE_TAR" ]; then
+  echo "ERROR: keystores.tar.gz not found. Run ./getKurtosisKeys.sh first." >&2
+  exit 1
+fi
 
-# (B) Per-key passwords -> keep the 0x*.txt files as overrides (preferred if they exist).
-#     Still provide a fallback prysm-password.txt (pick any one, or type yours):
-cp "$(ls "$TEKU_SECRETS"/0x*.txt | head -n1)" ./prysm-password.txt
+if [ ! -f "$PRYSM_PASSWORD" ]; then
+  echo "ERROR: prysm-password.txt not found. Run ./getKurtosisKeys.sh first." >&2
+  exit 1
+fi
 
-# 4) Recreate the Secret in the *devnet* namespace (that’s where your validator reads it)
-kubectl -n devnet delete secret validator-keystores --ignore-not-found
+if [ ! -d "$TEKU_SECRETS_DIR" ] || [ -z "$(ls -A "$TEKU_SECRETS_DIR"/*.txt 2>/dev/null)" ]; then
+  echo "ERROR: teku-secrets directory not found or empty. Run ./getKurtosisKeys.sh first." >&2
+  exit 1
+fi
 
-# Single password only:
-# kubectl -n devnet create secret generic validator-keystores \
-#   --from-file=keystores.tar.gz=./keystores.tar.gz \
-#   --from-file=prysm-password.txt=./prysm-password.txt
+# Count files
+keystore_size=$(ls -lh "$KEYSTORE_TAR" | awk '{print $5}')
+password_count=$(ls -1 "$TEKU_SECRETS_DIR"/*.txt 2>/dev/null | wc -l | awk '{print $1}')
 
-# Single + per-key overrides (adds all 0x*.txt files from teku-secrets):
-kubectl -n devnet create secret generic validator-keystores \
-  --from-file=keystores.tar.gz=./keystores.tar.gz \
-  --from-file=prysm-password.txt=./prysm-password.txt \
-  $(for f in "$TEKU_SECRETS"/0x*.txt; do [ -f "$f" ] && echo --from-file="$(basename "$f")=$f"; done)
+echo "✓ Found keystores.tar.gz ($keystore_size)"
+echo "✓ Found prysm-password.txt"
+echo "✓ Found $password_count per-key password files"
+echo
 
-# 5) Sanity check: you should see keystores.tar.gz, prysm-password.txt, and lots of 0x....txt entries
-kubectl -n devnet describe secret validator-keystores | sed -n '1,120p'
+# =========================
+# Create Kubernetes Secret
+# =========================
+echo "=== Creating Kubernetes secret ==="
+echo "Namespace: $NAMESPACE"
+echo "Secret name: $SECRET_NAME"
+echo
 
+# Delete existing secret if it exists
+if kubectl -n "$NAMESPACE" get secret "$SECRET_NAME" >/dev/null 2>&1; then
+  echo "Deleting existing secret..."
+  kubectl -n "$NAMESPACE" delete secret "$SECRET_NAME"
+fi
+
+# Build the secret with all files
+echo "Creating new secret with:"
+echo "  - keystores.tar.gz (Nimbus layout)"
+echo "  - prysm-password.txt (fallback password)"
+echo "  - $password_count per-key password files (0x*.txt)"
+echo
+
+kubectl -n "$NAMESPACE" create secret generic "$SECRET_NAME" \
+  --from-file=keystores.tar.gz="$KEYSTORE_TAR" \
+  --from-file=prysm-password.txt="$PRYSM_PASSWORD" \
+  $(for f in "$TEKU_SECRETS_DIR"/0x*.txt; do [ -f "$f" ] && echo --from-file="$(basename "$f")=$f"; done)
+
+echo "✓ Secret created successfully"
+echo
+
+# =========================
+# Verification
+# =========================
+echo "=== Verification ==="
+echo "Secret contents:"
+kubectl -n "$NAMESPACE" get secret "$SECRET_NAME" -o jsonpath='{.data}' | jq -r 'keys[]' | head -20
+echo "..."
+echo
+
+echo "Total keys in secret:"
+kubectl -n "$NAMESPACE" get secret "$SECRET_NAME" -o jsonpath='{.data}' | jq -r 'keys | length'
+echo
+
+echo "Secret size:"
+kubectl -n "$NAMESPACE" describe secret "$SECRET_NAME" | grep -E '^Data|^===|keystores.tar.gz|prysm-password'
+echo
+
+# =========================
+# Summary
+# =========================
+echo "========================================="
+echo "✅ Secret created successfully!"
+echo "========================================="
+echo ""
+echo "To use this secret in your validator pod, add to your deployment:"
+echo ""
+echo "  volumes:"
+echo "    - name: validator-keys"
+echo "      secret:"
+echo "        secretName: $SECRET_NAME"
+echo "  containers:"
+echo "    - name: validator"
+echo "      volumeMounts:"
+echo "        - name: validator-keys"
+echo "          mountPath: /keys"
+echo "          readOnly: true"
+echo ""
+echo "Keys will be available at:"
+echo "  /keys/keystores.tar.gz"
+echo "  /keys/prysm-password.txt"
+echo "  /keys/0x<PUBKEY>.txt (per-key passwords)"
