@@ -309,3 +309,13 @@ curl -sS -H 'Content-Type: application/json' \
 
 https://github.com/spring-financial-group/JX3_Azure_Vault_Dev_Cluster/tree/master/helmfiles/jx-staging/configs
 
+
+## Pre Allocated Accounts
+
+You'll have some pre-funded accounts (these are in genesis.json) 
+
+There are some scripts to check these in  [accounts scripts](chain-scripts)
+
+Understanding Pre funded Accounts (THESE are NOT the same as the validator accounts you have above)  [Overview](accounts-readme.md)
+
+
