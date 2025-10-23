@@ -117,7 +117,8 @@ Kurtosis doesn't produce the key files as part of the config download we do abov
 
 kurtosis files download 
 
-You need to downloand them from the image on the cluster 
+You need to downloand them from the image on the cluster , there is a K8 job that runs and checks for keys and updates the validator , this often completes so you can get them from that job but only if running (which is unlikley) 
+So the script tries to get them from there , but otherwsise gets them from the other services that the validaor job uses to build them , so either way you end up with the 64 validator keys that are then created in the secret (below) which the validaotr uses in it's init script to import and use for validation
 
 There are some scripts to help do this 
 
