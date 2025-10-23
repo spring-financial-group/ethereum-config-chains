@@ -29,3 +29,7 @@ Originally generated from Kurtosis devnet-ref enclave on [DATE].
 
 These are the acctual accounts 
 
+[accounts](kurtosis-accounts-complete.json)
+
+
+You can re-generate these by using python scripts or Node scripts (ask Claude) using the mnemonic in this file , but you can just use these accounts and improt them into yoru wallet 
