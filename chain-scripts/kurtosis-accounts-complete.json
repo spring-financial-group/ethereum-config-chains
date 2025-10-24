@@ -11,6 +11,6 @@
     {"index": 6, "address": "0x2c57d1CFC6d5f8E4182a56b4cf75421472eBAEa4", "privateKey": "0x5c6155c50e1f0371a239e8f8b3f94c0394f1e5a8b6d22b5c59ab87f2f1d63e3c"},
     {"index": 7, "address": "0x741bFE4802cE1C4b5b00F9Df2F5f179A1C89171A", "privateKey": "0x5da5d2f1c645e2a7f6a598f6a77f98b6c4c1f79cd5f0d5e3e3a7e1b8b6e0c7f3"},
     {"index": 8, "address": "0xc3913d4D8bAb4914328651C2EAE817C8b78E1f4c", "privateKey": "0x3de4f8a4b4e1a24f6cbbe4a3f1a6e3d4e6f8a2b3c5d6e7f8a9b0c1d2e3f4a5b6"},
-    {"index": 9, "address": "0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA", "privateKey": "0x4a8f3e7c2d1b6e5a9c8f7d6e5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d7c6"}
+    {"index": 9, "address": "0x65D08a056c17Ae13370565B04cF77D2AfA1cB9FA", "privateKey": "0x4a8f3e7c2d1b6e5a9c8f7d6e5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d7c65"}
   ]
 }
