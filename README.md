@@ -318,4 +318,6 @@ There are some scripts to check these in  [accounts scripts](chain-scripts)
 
 Understanding Pre funded Accounts (THESE are NOT the same as the validator accounts you have above)  [Overview](accounts-readme.md)
 
+## Setting up the Demo locally using Hardhat
 
+[Demo Hardhat Setup](demo-hardhat-setup.md)
