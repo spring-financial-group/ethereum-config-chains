@@ -29,29 +29,23 @@ There are **three repositories** used for this demo:
 ```mermaid
 flowchart TD
     subgraph OnChain["On-Chain"]
-      S["Smart Contract\n(Scheduled Task)"]
+      S["Smart Contract
+(Scheduled Task)"]
       T["Token Contract"]
     end
 
     subgraph OffChain["Off-Chain"]
-      O["Oracle.js\n(Event Listener)"]
-      B["Bank App\n(Payment Processor)"]
+      O["Oracle.js
+(Event Listener)"]
+      B["Bank App
+(Payment Processor)"]
     end
 
-    %% Scheduler emits event
-    S -->|emits event| O
-
-    %% Oracle requests payment off-chain
-    O -->|Create payment request| B
-
-    %% Bank replies
-    B -->|Confirm / Fail| O
-
-    %% Oracle finalizes on-chain
-    O -->|updatePaymentStatus()| S
-
-    %% Contract moves funds after status update
-    S -->|transfer()| T
+    S -- "emits event" --> O;
+    O -- "Create payment request" --> B;
+    B -- "Confirm / Fail" --> O;
+    O -- "updatePaymentStatus()" --> S;
+    S -- "transfer()" --> T;
 ```
 
 ### Event Sequence
@@ -243,14 +237,6 @@ You now have:
 - Oracle contracts deployed locally
 - The Oracle.js WebSocket server listening for on-chain events
 - The OffChain Bank App and OnChain App communicating end-to-end
-
----
-
-## 🩺 Troubleshooting
-
-- If contracts don’t appear in MetaMask, import them manually using the Hardhat node RPC URL.
-- If `npm link` causes module resolution issues, reset with `npm unlink` and try again.
-- Verify the Oracle.js console output to ensure it connects successfully to the local node and detects contract events.
 
 ---
 
