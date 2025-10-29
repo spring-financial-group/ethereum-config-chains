@@ -28,30 +28,30 @@ There are **three repositories** used for this demo:
 
 ```mermaid
 flowchart TD
-    subgraph OnChain[🧠 On-Chain]
-      S[⏱️ Smart Contract<br/>(Scheduled Task)]
-      T[💰 Token Contract]
+    subgraph OnChain["On-Chain"]
+      S["Smart Contract\n(Scheduled Task)"]
+      T["Token Contract"]
     end
 
-    subgraph OffChain[🌐 Off-Chain]
-      O[🔌 Oracle.js<br/>(Event Listener)]
-      B[🏦 Bank App<br/>(Payment Processor)]
+    subgraph OffChain["Off-Chain"]
+      O["Oracle.js\n(Event Listener)"]
+      B["Bank App\n(Payment Processor)"]
     end
 
     %% Scheduler emits event
-    S -- emits event --> O
+    S -->|emits event| O
 
     %% Oracle requests payment off-chain
-    O -- "Create payment request" --> B
+    O -->|Create payment request| B
 
     %% Bank replies
-    B -- "Confirm / Fail" --> O
+    B -->|Confirm / Fail| O
 
     %% Oracle finalizes on-chain
-    O -- "updatePaymentStatus()" --> S
+    O -->|updatePaymentStatus()| S
 
     %% Contract moves funds after status update
-    S -- "transfer()" --> T
+    S -->|transfer()| T
 ```
 
 ### Event Sequence
@@ -91,13 +91,7 @@ git clone https://github.com/spring-financial-group/mqube-onchain-debit-transfer
 
 In the **network-of-oracles** directory, run:
 
-The clean command cleans the deployments folder down you don't need to do this if you don't want to redeploy everything from scratch
-
-The compile command compiles the contracts
-
 ```bash
-npx hardhat clean
-npx hardhat compile
 npx hardhat node
 ```
 
@@ -132,7 +126,9 @@ ln -s localhost hardhat
 Run the following commands:
 
 ```bash
-npm run localhost
+npx hardhat clean
+npx hardhat compile
+npx hardhat run localhost
 ```
 
 This deploys all contracts locally and prints output similar to:
@@ -247,6 +243,14 @@ You now have:
 - Oracle contracts deployed locally
 - The Oracle.js WebSocket server listening for on-chain events
 - The OffChain Bank App and OnChain App communicating end-to-end
+
+---
+
+## 🩺 Troubleshooting
+
+- If contracts don’t appear in MetaMask, import them manually using the Hardhat node RPC URL.
+- If `npm link` causes module resolution issues, reset with `npm unlink` and try again.
+- Verify the Oracle.js console output to ensure it connects successfully to the local node and detects contract events.
 
 ---
 
