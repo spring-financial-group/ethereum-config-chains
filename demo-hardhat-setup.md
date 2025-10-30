@@ -204,7 +204,7 @@ If needed, import the deployed contracts into **MetaMask** using the local Hardh
 
 ---
 
-### Option 2: CLI Script
+### Option 2: CLI Script (Javascript)
 
 Run the deployment script manually:
 
@@ -227,6 +227,13 @@ npx hardhat run trigger-payment.js --network localhost
 ```
 
 > ⚠️ Use the actual addresses printed at the end of your deployment script — the above are examples.
+
+### Option 3: CLI Script (GoLand)
+
+Run it manually but use Go instead which show syou how to generate the Go code usign ABI as well 
+
+
+https://github.com/spring-financial-group/go-onchain-approval
 
 ---
 
