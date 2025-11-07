@@ -230,7 +230,7 @@ npx hardhat run trigger-payment.js --network localhost
 
 ### Option 3: CLI Script (GoLand)
 
-Run it manually but use Go instead which show syou how to generate the Go code usign ABI as well 
+Run it manually but use Go instead which shows you how to generate the Go code usign ABI as well 
 
 
 https://github.com/spring-financial-group/go-onchain-approval
