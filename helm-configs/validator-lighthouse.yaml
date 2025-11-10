@@ -1,4 +1,3 @@
-# Set to validator mode
 mode: "validator"
 
 jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
@@ -19,6 +18,7 @@ devnet:
   name: "private-net"
 
 extraArgs:
+  - --datadir=/imported-keys
   - --beacon-nodes=http://beacon-devnet-lighthouse:5052
   - --suggested-fee-recipient=0x0000000000000000000000000000000000000001
   - --graffiti=lighthouse-validator
@@ -29,7 +29,6 @@ image:
   repository: sigp/lighthouse
   tag: latest
 
-# Mount the secret containing keystores
 extraVolumes:
   - name: validator-keystores
     secret:
@@ -44,7 +43,6 @@ extraVolumeMounts:
   - name: imported-keys
     mountPath: /imported-keys
 
-# Init container to import keys
 initContainers:
   - name: import-keys
     image: sigp/lighthouse:latest
@@ -57,16 +55,13 @@ initContainers:
       - -c
       - |
         set -e
-        
-        # Unpack keystores to temp location
         mkdir -p /tmp/keystores
         cd /tmp/keystores
         tar -xzf /secrets/keystores.tar.gz
-        
+
         echo "Unpacked keystores:"
         ls -la /tmp/keystores/
         
-        # Import each keystore
         imported=0
         for keystore in /tmp/keystores/*/keystore*.json; do
           if [ ! -f "$keystore" ]; then
@@ -76,7 +71,6 @@ initContainers:
           pubdir=$(dirname "$keystore")
           pub=$(basename "$pubdir")
         
-          # Find password file
           if [ -f "/secrets/${pub}.txt" ]; then
             passfile="/secrets/${pub}.txt"
           elif [ -f "/secrets/prysm-password.txt" ]; then
@@ -90,7 +84,6 @@ initContainers:
         
           echo "Importing keystore for $pub..."
         
-          # Import using lighthouse
           lighthouse account validator import \
             --datadir=/imported-keys \
             --keystore="$keystore" \
@@ -101,8 +94,6 @@ initContainers:
         done
         
         echo "Successfully imported $imported keystores"
-        
-        # List what we have
         ls -laR /imported-keys/validators/
 
     volumeMounts:
@@ -111,18 +102,3 @@ initContainers:
         readOnly: true
       - name: imported-keys
         mountPath: /imported-keys
-
-# Override the default command to use our imported keys location
-customCommand:
-  - sh
-  - -ac
-  - >
-    exec lighthouse
-    validator
-    --datadir=/imported-keys
-    --metrics
-    --metrics-address=0.0.0.0
-    --metrics-port={{ .Values.metricsPort }}
-  {{- range .Values.extraArgs }}
-  {{ tpl . $ }}
-  {{- end }}
