@@ -5,7 +5,7 @@ set -Eeuo pipefail
 # =========================
 # Config
 # =========================
-: "${ENCLAVE:=devnet-ref}"
+: "${ENCLAVE:=my-testnet}"
 : "${KURTOSIS_BIN:=/opt/homebrew/bin/kurtosis}"
 export PATH="$(dirname "$KURTOSIS_BIN"):$PATH"
 : "${KURTOSIS_CLI_LOG_LEVEL:=error}"
