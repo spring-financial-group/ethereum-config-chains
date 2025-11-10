@@ -18,6 +18,7 @@ devnet:
   name: "private-net"
 
 extraArgs:
+  - --testnet-dir=/data/testnet_spec        # CRITICAL: tells validator to use devnet config
   - --datadir=/imported-keys
   - --beacon-nodes=http://beacon-devnet-lighthouse:5052
   - --suggested-fee-recipient=0x0000000000000000000000000000000000000001
@@ -47,9 +48,9 @@ initContainers:
   - name: import-keys
     image: sigp/lighthouse:latest
     securityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+      runAsUser: 10001
+      runAsGroup: 10001
+      fsGroup: 10001
     command:
       - sh
       - -c
