@@ -237,6 +237,7 @@ Blockscout’s **Stats service** (written in Rust) requires a manual DB creation
 Run the helper script in this repo:
 
 ```bash
+export NS=devnet
 ./scripts/createStatsDB.sh
 ```
 
