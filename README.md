@@ -184,8 +184,7 @@ helm upgrade --install geth-devnet ethpandaops/geth \
 ```bash
 
 helm upgrade --install validator-devnet ethpandaops/prysm \
-  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/validator.yaml \   
-  --namespace devnet --create-namespace
+  -f https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/helm-configs/validator.yaml --namespace devnet --create-namespace
 
 ```
 
