@@ -1,32 +1,128 @@
+# Set to validator mode
+mode: "validator"
+
+jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
+
+p2pPort: 13002
+
+resources:
+  requests:
+    cpu: "2"
+    memory: "3Gi"
+  limits:
+    cpu: "2"
+    memory: "3Gi"
+
+devnet:
+  enabled: true
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"
+
 extraArgs:
   - --beacon-nodes=http://beacon-devnet-lighthouse:5052
-  - --datadir=/data
   - --suggested-fee-recipient=0x0000000000000000000000000000000000000001
+  - --graffiti=lighthouse-validator
 
+replicas: 1
+
+image:
+  repository: sigp/lighthouse
+  tag: latest
+
+# Mount the secret containing keystores
 extraVolumes:
   - name: validator-keystores
     secret:
       secretName: validator-keystores
+  - name: imported-keys
+    emptyDir: {}
 
 extraVolumeMounts:
   - name: validator-keystores
-    mountPath: /validator-keys
+    mountPath: /secrets
     readOnly: true
+  - name: imported-keys
+    mountPath: /imported-keys
 
-# If the chart doesn't have built-in init, add simple unpacker
+# Init container to import keys
 initContainers:
-  - name: unpack-keys
-    image: busybox
+  - name: import-keys
+    image: sigp/lighthouse:latest
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
     command:
       - sh
       - -c
       - |
-        cd /data/validators
-        tar -xzf /validator-keys/keystores.tar.gz
-        # Lighthouse expects: /data/validators/<pubkey>/voting-keystore.json
-        # and passwords in /data/secrets/<pubkey>
+        set -e
+        
+        # Unpack keystores to temp location
+        mkdir -p /tmp/keystores
+        cd /tmp/keystores
+        tar -xzf /secrets/keystores.tar.gz
+        
+        echo "Unpacked keystores:"
+        ls -la /tmp/keystores/
+        
+        # Import each keystore
+        imported=0
+        for keystore in /tmp/keystores/*/keystore*.json; do
+          if [ ! -f "$keystore" ]; then
+            continue
+          fi
+        
+          pubdir=$(dirname "$keystore")
+          pub=$(basename "$pubdir")
+        
+          # Find password file
+          if [ -f "/secrets/${pub}.txt" ]; then
+            passfile="/secrets/${pub}.txt"
+          elif [ -f "/secrets/prysm-password.txt" ]; then
+            passfile="/secrets/prysm-password.txt"
+          elif [ -f "/secrets/password.txt" ]; then
+            passfile="/secrets/password.txt"
+          else
+            echo "ERROR: No password file found for $pub"
+            continue
+          fi
+        
+          echo "Importing keystore for $pub..."
+        
+          # Import using lighthouse
+          lighthouse account validator import \
+            --datadir=/imported-keys \
+            --keystore="$keystore" \
+            --password-file="$passfile" \
+            --reuse-password || echo "Failed to import $pub"
+        
+          imported=$((imported + 1))
+        done
+        
+        echo "Successfully imported $imported keystores"
+        
+        # List what we have
+        ls -laR /imported-keys/validators/
+
     volumeMounts:
-      - name: storage
-        mountPath: /data
       - name: validator-keystores
-        mountPath: /validator-keys
+        mountPath: /secrets
+        readOnly: true
+      - name: imported-keys
+        mountPath: /imported-keys
+
+# Override the default command to use our imported keys location
+customCommand:
+  - sh
+  - -ac
+  - >
+    exec lighthouse
+    validator
+    --datadir=/imported-keys
+    --metrics
+    --metrics-address=0.0.0.0
+    --metrics-port={{ .Values.metricsPort }}
+  {{- range .Values.extraArgs }}
+  {{ tpl . $ }}
+  {{- end }}
