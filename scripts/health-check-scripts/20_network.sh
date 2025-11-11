@@ -69,7 +69,7 @@ check_flag() {
   fi
 }
 
-check_flag "--execution-endpoint=http://$EL_SVC.default.svc:$AUTHRPC_PORT"
+check_flag "--execution-endpoint=http://$EL_SVC.devnet.svc:$AUTHRPC_PORT"
 check_flag "--jwt-secret=$CL_JWT_PATH"
 check_flag "--min-sync-peers=0"
 check_flag "--subscribe-all-subnets"
@@ -114,11 +114,11 @@ probe_and_print() {
 
 # Beacon → EL (service DNS and FQDN)
 probe_and_print "$CL_POD" "$CL_CTN" "$EL_SVC"             "$AUTHRPC_PORT" "Beacon → EL TCP"
-probe_and_print "$CL_POD" "$CL_CTN" "$EL_SVC.default.svc" "$AUTHRPC_PORT" "Beacon → EL TCP"
+probe_and_print "$CL_POD" "$CL_CTN" "$EL_SVC.devnet.svc" "$AUTHRPC_PORT" "Beacon → EL TCP"
 
 # Validator → Beacon (only if VC is present)
 if [[ -n "${VC_POD:-}" && -n "${VC_CTN:-}" ]]; then
   probe_and_print "$VC_POD" "$VC_CTN" "$CL_SVC"             "$CL_GRPC_PORT" "Validator → Beacon TCP"
-  probe_and_print "$VC_POD" "$VC_CTN" "$CL_SVC.default.svc" "$CL_GRPC_PORT" "Validator → Beacon TCP"
+  probe_and_print "$VC_POD" "$VC_CTN" "$CL_SVC.devnet.svc" "$CL_GRPC_PORT" "Validator → Beacon TCP"
 fi
 

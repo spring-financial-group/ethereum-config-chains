@@ -1,0 +1,52 @@
+jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: "3"
+    memory: "4Gi"
+  limits:
+    cpu: "3"
+    memory: "4Gi"
+
+ingress:
+  enabled: false
+
+
+extraArgs:
+
+  - --syncmode=full
+  - --snapshot=false 
+  - --gcmode=archive
+  - --txlookuplimit=0  
+
+  - --nodiscover
+  - --maxpeers=0
+
+  - --http.api=eth,net,web3,txpool
+  - --ws.api=eth,net,web3,txpool
+
+  - --cache=1024        # 1Gi cache helps EL build/execute payloads quickly
+  - --cache.trie=50
+  - --cache.trie.journal=50
+  - --cache.gc=50
+
+  - --http
+  - --http.addr=0.0.0.0
+  - --http.port=8545
+  - --http.vhosts=*
+  - --http.corsdomain=*
+
+  - --ws
+  - --ws.addr=0.0.0.0
+  - --ws.port=8545
+  - --ws.origins=*
+
+devnet:
+  enabled: true
+
+
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"
+
