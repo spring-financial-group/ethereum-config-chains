@@ -41,8 +41,8 @@ extraArgs:
   - --nodiscover
   - --maxpeers=0
 
-  - --http.api=eth,net,web3,txpool,engine,admin
-  - --ws.api=eth,net,web3,txpool,engine,admin
+  - --http.api=eth,net,web3,txpool,engine,admin,debug
+  - --ws.api=eth,net,web3,txpool,engine,admin,debug
 
   - --cache=1024        # 1Gi cache helps EL build/execute payloads quickly
   - --cache.trie=50
