@@ -14,7 +14,7 @@ resources:
 
 
 extraArgs:
-  - --execution-endpoint=http://geth-devnet:8551
+  - --execution-endpoint=http://geth-devnet-lighthouse:8551
 
 
 devnet:
