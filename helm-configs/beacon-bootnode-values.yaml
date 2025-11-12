@@ -3,17 +3,26 @@ mode: "bootnode"
 
 # Use the same genesis config
 initCharts:
-  - url: https://github.com/mqubeonline/ethereum-config-chains
+  - url: https://github.com/spring-financial-group/ethereum-config-chains
     path: network-configs/private-net
     configName: devnet
+
+devnet:
+  enabled: true
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"
 
 # P2P port for beacon bootnode
 p2pPort: 9000
 
+# Disable this to prevent $(POD_IP) from overriding enr-address
+p2pNodePort:
+  enabled: false
+
 extraArgs:
   - --enr-address=10.0.43.50
-  -
-# No need for execution endpoint since it's just a bootnode
+  - --testnet-dir=/data/testnet_spec  # Tell bootnode to use your genesis
+
 # Minimal resources
 resources:
   requests:
@@ -36,10 +45,3 @@ service:
       port: 9000
       targetPort: 9000
       protocol: UDP
-
-devnet:
-  enabled: true
-
-
-  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
-  name: "private-net"
