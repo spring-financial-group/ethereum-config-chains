@@ -7,8 +7,8 @@ export NS="${NS:-devnet}"
 # ===== PRYSM SETUP =====
 # Label selectors
 export EL_LABEL="${EL_LABEL:-app.kubernetes.io/instance=geth-devnet}"
-export CL_LABEL="${CL_LABEL:-app.kubernetes.io/instance=beacon-devnet}"
-export VC_LABEL="${VC_LABEL:-app.kubernetes.io/instance=validator-devnet}"
+export CL_LABEL="${CL_LABEL:-app.kubernetes.io/instance=beacon-devnet-prysm}"
+export VC_LABEL="${VC_LABEL:-app.kubernetes.io/instance=validator-devnet-prysm}"
 
 # Service names
 export EL_SVC="${EL_SVC:-geth-devnet}"
@@ -22,12 +22,12 @@ export CL_GRPC_PORT="${CL_GRPC_PORT:-4000}"
 
 # ===== LIGHTHOUSE SETUP =====
 # Label selectors
-export EL_LABEL_LIGHTHOUSE="${EL_LABEL_LIGHTHOUSE:-app.kubernetes.io/instance=geth-devnet-lighthouse}"
+export EL_LABEL_LIGHTHOUSE="${EL_LABEL_LIGHTHOUSE:-app.kubernetes.io/instance=geth-lighthouse}"
 export CL_LABEL_LIGHTHOUSE="${CL_LABEL_LIGHTHOUSE:-app.kubernetes.io/instance=beacon-devnet-lighthouse}"
 export VC_LABEL_LIGHTHOUSE="${VC_LABEL_LIGHTHOUSE:-app.kubernetes.io/instance=validator-devnet-lighthouse}"
 
 # Service names
-export EL_SVC_LIGHTHOUSE="${EL_SVC_LIGHTHOUSE:-geth-devnet-lighthouse}"
+export EL_SVC_LIGHTHOUSE="${EL_SVC_LIGHTHOUSE:-geth-lighthouse}"
 export CL_SVC_LIGHTHOUSE="${CL_SVC_LIGHTHOUSE:-beacon-devnet-lighthouse}"
 
 # Ports (Lighthouse)
