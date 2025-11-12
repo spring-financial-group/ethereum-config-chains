@@ -12,7 +12,7 @@ p2pPort: 9000
 
 extraArgs:
   - --enr-address=10.0.43.50
-  - 
+  -
 # No need for execution endpoint since it's just a bootnode
 # Minimal resources
 resources:
@@ -36,3 +36,10 @@ service:
       port: 9000
       targetPort: 9000
       protocol: UDP
+
+devnet:
+  enabled: true
+
+
+  baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
+  name: "private-net"
