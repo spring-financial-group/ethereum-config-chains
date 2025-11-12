@@ -1,7 +1,5 @@
-# beacon-bootnode-values.yaml
 mode: "bootnode"
 
-# Use the same genesis config
 initCharts:
   - url: https://github.com/spring-financial-group/ethereum-config-chains
     path: network-configs/private-net
@@ -12,18 +10,15 @@ devnet:
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
 
-# P2P port for beacon bootnode
 p2pPort: 9000
 
-# Disable this to prevent $(POD_IP) from overriding enr-address
 p2pNodePort:
   enabled: false
 
 extraArgs:
-  - --enr-address=10.0.43.50
-  - --testnet-dir=/data/testnet_spec  # Tell bootnode to use your genesis
+  - --enr-address=10.0.43.50  # Keep this! It tells bootnode what to advertise
+  - --testnet-dir=/data/testnet_spec
 
-# Minimal resources
 resources:
   requests:
     cpu: 100m
@@ -32,10 +27,11 @@ resources:
     cpu: 200m
     memory: 256Mi
 
-# Enable service for other beacons to reach it
+# CRITICAL: Lock service to match enr-address
 service:
   enabled: true
   type: ClusterIP
+  clusterIP: 10.0.43.50  # This makes service IP match advertised IP
   ports:
     - name: p2p-tcp
       port: 9000
