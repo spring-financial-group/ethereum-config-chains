@@ -1,3 +1,4 @@
+# beacon-bootnode-values.yaml
 mode: "bootnode"
 
 initCharts:
@@ -16,8 +17,19 @@ p2pNodePort:
   enabled: false
 
 extraArgs:
-  - --enr-address=10.0.43.50  # Keep this! It tells bootnode what to advertise
   - --testnet-dir=/data/testnet_spec
+  - --enr-address=beacon-bootnode-lighthouse.devnet.svc.cluster.local
+
+# Mount the secret to where Lighthouse expects it
+extraVolumes:
+  - name: bootnode-key
+    secret:
+      secretName: beacon-bootnode-key
+
+extraVolumeMounts:
+  - name: bootnode-key
+    mountPath: /data/network/key  # Lighthouse looks for key here
+    subPath: key
 
 resources:
   requests:
@@ -26,18 +38,3 @@ resources:
   limits:
     cpu: 200m
     memory: 256Mi
-
-# CRITICAL: Lock service to match enr-address
-service:
-  enabled: true
-  type: ClusterIP
-  clusterIP: 10.0.43.50  # This makes service IP match advertised IP
-  ports:
-    - name: p2p-tcp
-      port: 9000
-      targetPort: 9000
-      protocol: TCP
-    - name: p2p-udp
-      port: 9000
-      targetPort: 9000
-      protocol: UDP

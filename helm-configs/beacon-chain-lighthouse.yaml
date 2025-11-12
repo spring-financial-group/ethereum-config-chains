@@ -12,15 +12,12 @@ resources:
     cpu: "3"
     memory: "4Gi"
 
-
 extraArgs:
   - --execution-endpoint=http://geth-lighthouse:8551
+  - --libp2p-addresses=/dns4/beacon-devnet-prysm-0.beacon-devnet-prysm-headless.devnet.svc.cluster.local/tcp/13001
   - --subscribe-all-subnets
-  - --disable-peer-scoring
 
 devnet:
   enabled: true
-
-
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"

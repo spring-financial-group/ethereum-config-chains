@@ -12,19 +12,14 @@ resources:
     cpu: "3"
     memory: "4Gi"
 
-image:
-  repository: ethpandaops/prysm-beacon-chain
-  tag: develop
-
 extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=1
+  - --peer=/dns4/beacon-devnet-lighthouse-0.beacon-devnet-lighthouse-headless.devnet.svc.cluster.local/tcp/13001
   - --subscribe-all-subnets
 
 devnet:
   enabled: true
-
-
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
