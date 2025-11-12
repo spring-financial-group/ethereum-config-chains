@@ -10,6 +10,9 @@ initCharts:
 # P2P port for beacon bootnode
 p2pPort: 9000
 
+extraArgs:
+  - --enr-address=10.0.43.50
+  - 
 # No need for execution endpoint since it's just a bootnode
 # Minimal resources
 resources:
