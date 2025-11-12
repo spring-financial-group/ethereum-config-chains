@@ -20,11 +20,8 @@ extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=1
-  - '--bootstrap-node=enr:-Jq4QEvGliaXeSjsA-VxGAFx6JB_uM1yDtNY90tBkK66d6ceDlAFOzIEUBEaY7UobIywyWL9GMCk2-99NX3hgWK-zqQBhGV0aDKQtTA_KgEAAAAAIgEAAAAAAIJpZIJ2NIJpcIQK9AJ1iXNlY3AyNTZrMaECr3_rvuEpDYNx7zY4Vuy3jCvTlxoN7rkIT3k6jqJqUoSDdWRwgiMo'
-
-  # recommended for tiny/dev nets
+  - --peer=/ip4/10.244.2.117/tcp/9000/p2p/16Uiu2HAm7EkTh1RgGswgvrRe1TkcGsMLeCVYf1L3VEmQMCcS6NW7
   - --subscribe-all-subnets
-
 
 devnet:
   enabled: true
