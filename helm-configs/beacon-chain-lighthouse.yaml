@@ -16,7 +16,7 @@ resources:
 extraArgs:
   - --execution-endpoint=http://geth-lighthouse:8551
   - --subscribe-all-subnets
-
+  - --disable-peer-scoring
 
 devnet:
   enabled: true
