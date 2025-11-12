@@ -36,10 +36,10 @@ extraArgs:
   - --syncmode=full
   - --snapshot=false 
   - --gcmode=archive
-  - --txlookuplimit=0  
+  - --txlookuplimit=0
 
-  - --nodiscover
-  - --maxpeers=0
+  - --discovery.port=30303
+  - --maxpeers=50
 
   - --http.api=eth,net,web3,txpool,engine,admin,debug
   - --ws.api=eth,net,web3,txpool,engine,admin,debug
