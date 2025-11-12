@@ -1,0 +1,35 @@
+# beacon-bootnode-values.yaml
+mode: "bootnode"
+
+# Use the same genesis config
+initCharts:
+  - url: https://github.com/mqubeonline/ethereum-config-chains
+    path: network-configs/private-net
+    configName: devnet
+
+# P2P port for beacon bootnode
+p2pPort: 9000
+
+# No need for execution endpoint since it's just a bootnode
+# Minimal resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Enable service for other beacons to reach it
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: p2p-tcp
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+    - name: p2p-udp
+      port: 9000
+      targetPort: 9000
+      protocol: UDP
