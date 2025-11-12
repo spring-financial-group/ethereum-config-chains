@@ -20,7 +20,6 @@ extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=1
-  - --peer=/ip4/10.244.2.117/tcp/9000/p2p/16Uiu2HAm7EkTh1RgGswgvrRe1TkcGsMLeCVYf1L3VEmQMCcS6NW7
   - --subscribe-all-subnets
 
 devnet:
