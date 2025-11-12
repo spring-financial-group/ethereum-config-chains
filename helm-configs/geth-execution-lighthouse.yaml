@@ -43,6 +43,8 @@ extraArgs:
   - --ws.port=8545
   - --ws.origins=*
 
+  - --bootnodes=enode://f8a46a896e11e4b08c7270bdedc7376f0fb2ccff0c27665e72efcb7160b7f94cb153d8ed8cc574afcd550d83fd2c3337be64c1f159ce07e620da2f1766695a43@bootnode.devnet.svc.cluster.local:30301
+
 devnet:
   enabled: true
 
