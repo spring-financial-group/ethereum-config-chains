@@ -14,8 +14,8 @@ resources:
 
 extraArgs:
   - --execution-endpoint=http://geth-lighthouse:8551
-  - --libp2p-addresses=/dns4/beacon-devnet-prysm-0.beacon-devnet-prysm-headless.devnet.svc.cluster.local/tcp/13001
   - --subscribe-all-subnets
+  - --enable-private-discovery  # Enable mDNS for automatic peer discovery
 
 devnet:
   enabled: true

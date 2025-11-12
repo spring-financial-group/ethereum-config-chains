@@ -16,7 +16,7 @@ extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=1
-  - --peer=/dns4/beacon-devnet-lighthouse-0.beacon-devnet-lighthouse-headless.devnet.svc.cluster.local/tcp/13001
+  - --p2p-local-discovery  # Enable mDNS for automatic peer discovery
   - --subscribe-all-subnets
 
 devnet:
