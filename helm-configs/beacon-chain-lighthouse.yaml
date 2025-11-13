@@ -12,9 +12,6 @@ resources:
     cpu: "3"
     memory: "4Gi"
 
-
-
-
 extraArgs:
   - --execution-endpoint=http://geth-devnet-lighthouse:8551
 
