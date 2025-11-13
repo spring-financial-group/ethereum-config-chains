@@ -15,7 +15,7 @@ resources:
 extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
-  - --min-sync-peers=1
+  - --min-sync-peers=0
 
 devnet:
   enabled: true
