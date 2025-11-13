@@ -13,7 +13,7 @@ resources:
     memory: "4Gi"
 
 extraArgs:
-  - --execution-endpoint=http://geth-devnet-lighthouse:8551
+  - --execution-endpoint=http://geth-lighthouse:8551
 
 devnet:
   enabled: true
