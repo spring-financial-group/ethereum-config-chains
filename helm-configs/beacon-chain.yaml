@@ -16,8 +16,6 @@ extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=1
-  - --p2p-local-discovery  # Enable mDNS for automatic peer discovery
-  - --subscribe-all-subnets
 
 devnet:
   enabled: true
