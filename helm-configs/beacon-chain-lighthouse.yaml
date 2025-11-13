@@ -16,10 +16,7 @@ resources:
 
 
 extraArgs:
-  - --execution-endpoint=http://geth-lighthouse:8551
-  - --boot-nodes=enr:-Jq4QEvGliaXeSjsA-VxGAFx6JB_uM1yDtNY90tBkK66d6ceDlAFOzIEUBEaY7UobIywyWL9GMCk2-99NX3hgWK-zqQBhGV0aDKQtTA_KgEAAAAAIgEAAAAAAIJpZIJ2NIJpcIQK9AJ1iXNlY3AyNTZrMaECr3_rvuEpDYNx7zY4Vuy3jCvTlxoN7rkIT3k6jqJqUoSDdWRwgiMo
-  - --subscribe-all-subnets
-
+  - --execution-endpoint=http://geth-devnet-lighthouse:8551
 
 devnet:
   enabled: true
