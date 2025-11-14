@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-NS=${NS:-default}
+NAMESPACE=${NAMESPACE:-default}
 SECRET=${SECRET:-blockscout-db-env}
 KEY=${KEY:-DATABASE_URL}
 STATS_DB=${STATS_DB:-blockscout_stats}
 
 # 1) Pull the working DSN (already ends with ?sslmode=disable)
-DB_URL="$(kubectl get secret "$SECRET" -n "$NS" -o jsonpath='{.data.'"$KEY"'}' | base64 -d)"
+DB_URL="$(kubectl get secret "$SECRET" -n "$NAMESPACE" -o jsonpath='{.data.'"$KEY"'}' | base64 -d)"
 
 # 2) Build an admin DSN that points at the 'postgres' database (keeps query string intact)
 #    e.g. .../blockscout?sslmode=disable  -> .../postgres?sslmode=disable
 ADMIN_URL="$(echo "$DB_URL" | sed -E 's#(postgres(ql)?://[^/]+/)[^?]+#\1postgres#')"
 
 echo "Creating DB '$STATS_DB' if missing…"
-kubectl run pgtool --rm -it --restart=Never -n "$NS" \
+kubectl run pgtool --rm -it --restart=Never -n "$NAMESPACE" \
   --image=registry-1.docker.io/bitnami/postgresql:latest -- \
   bash -lc "
 set -euo pipefail
