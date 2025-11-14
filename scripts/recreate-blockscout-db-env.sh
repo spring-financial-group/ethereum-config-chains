@@ -4,17 +4,17 @@ set -euo pipefail
 NAMESPACE=${NAMESPACE:-default}
 REL=blockscout-db
 
-APP_USER=$(kubectl get sts ${REL}-postgresql -n $NAMESPACE -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="POSTGRES_USER")].value}')
-DB_NAME=$(kubectl get sts ${REL}-postgresql -n $NAMESPACE -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="POSTGRES_DB")].value}')
-APP_PASS=$(kubectl get secret ${REL}-auth -n $NAMESPACE -o jsonpath='{.data.password}' | base64 -d)
+APP_USER=$(kubectl get sts ${REL}-postgresql -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="POSTGRES_USER")].value}')
+DB_NAME=$(kubectl get sts ${REL}-postgresql -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="POSTGRES_DB")].value}')
+APP_PASS=$(kubectl get secret ${REL}-auth -n "$NAMESPACE" -o jsonpath='{.data.password}' | base64 -d)
 PG_HOST=${REL}-postgresql.${NAMESPACE}.svc.cluster.local
 PG_PORT=5432
 
 DB_URL="postgresql://${APP_USER}:${APP_PASS}@${PG_HOST}:${PG_PORT}/${DB_NAME}?sslmode=disable"
 
 # Recreate the env secret atomically with all keys:
-kubectl delete secret blockscout-db-env -n $NAMESPACE --ignore-not-found
-kubectl create secret generic blockscout-db-env -n $NAMESPACE \
+kubectl delete secret blockscout-db-env -n "$NAMESPACE" --ignore-not-found
+kubectl create secret generic blockscout-db-env -n "$NAMESPACE" \
   --from-literal=DATABASE_URL="${DB_URL}" \
   --from-literal=ACCOUNT_DATABASE_URL="${DB_URL}" \
   --from-literal=DATABASE_SSL="false" \
