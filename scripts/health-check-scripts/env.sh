@@ -4,6 +4,12 @@
 # Namespace
 export NS="${NS:-devnet}"
 
+# ===== CONTAINER NAMES =====
+# Prysm stack container names
+export EL_CTN="${EL_CTN:-geth}"
+export CL_CTN="${CL_CTN:-prysm}"
+export VC_CTN="${VC_CTN:-prysm}"
+
 # ===== PRYSM SETUP =====
 # Label selectors
 export EL_LABEL="${EL_LABEL:-app.kubernetes.io/instance=geth-devnet}"

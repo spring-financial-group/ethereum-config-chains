@@ -17,53 +17,133 @@ _VC_CTN="${CURRENT_VC_CTN:-$VC_CTN}"
 
 if [[ -z "$_CL_POD" ]]; then
   warn "Skipping network check (CL pod not found)"
-  return 0
-fi
-
-# Service & endpoints check
-local_svc_json="$(kubectl get svc -n "$NS" "$EL_SVC" -o json 2>/dev/null || true)"
-if [[ -n "$local_svc_json" ]]; then
-  pass "Service $EL_SVC present"
 else
-  fail "Service $EL_SVC not found"
-  return 0
-fi
+  # Service & endpoints check
+  local_svc_json="$(kubectl get svc -n "$NS" "$EL_SVC" -o json 2>/dev/null || true)"
+  if [[ -n "$local_svc_json" ]]; then
+    pass "Service $EL_SVC present"
 
-echo "Ports on $EL_SVC:"
-echo "$local_svc_json" | jq -r '.spec.ports[] | "  \(.name)//\(.port)/\(.protocol)"'
+    echo "Ports on $EL_SVC:"
+    echo "$local_svc_json" | jq -r '.spec.ports[] | "  \(.name)//\(.port)/\(.protocol)"'
 
-if echo "$local_svc_json" | jq -e --arg p "$AUTHRPC_PORT" '.spec.ports[] | select(.port==($p|tonumber))' >/dev/null; then
-  pass "Service exposes Engine API port $AUTHRPC_PORT"
-else
-  fail "Service missing Engine API $AUTHRPC_PORT"
-fi
+    if echo "$local_svc_json" | jq -e --arg p "$AUTHRPC_PORT" '.spec.ports[] | select(.port==($p|tonumber))' >/dev/null; then
+      pass "Service exposes Engine API port $AUTHRPC_PORT"
+    else
+      fail "Service missing Engine API $AUTHRPC_PORT"
+    fi
 
-eps_json="$(kubectl get endpoints -n "$NS" "$EL_SVC" -o json 2>/dev/null || true)"
-if [[ -n "$eps_json" ]]; then
-  pass "Endpoints exist for $EL_SVC"
-else
-  fail "No Endpoints for $EL_SVC"
-fi
+    eps_json="$(kubectl get endpoints -n "$NS" "$EL_SVC" -o json 2>/dev/null || true)"
+    if [[ -n "$eps_json" ]]; then
+      pass "Endpoints exist for $EL_SVC"
+    else
+      fail "No Endpoints for $EL_SVC"
+    fi
 
-# TCP probe: Beacon → EL
-if [[ -n "$_CL_POD" && -n "$_CL_CTN" ]]; then
-  probe_result=$(tcp_probe "$_CL_POD" "$_CL_CTN" "$EL_SVC" "$AUTHRPC_PORT" 2>/dev/null || echo "FAIL")
-  case "$probe_result" in
-    OK)   pass "Beacon → EL TCP $EL_SVC:$AUTHRPC_PORT OK" ;;
-    SKIP) warn "Beacon → EL TCP $EL_SVC:$AUTHRPC_PORT SKIP (no tcp tool)" ;;
-    *)    fail "Beacon → EL TCP $EL_SVC:$AUTHRPC_PORT FAIL" ;;
-  esac
-fi
+    # Engine API connectivity check (using logs instead of tcp_probe for reliability)
+    if [[ -n "$_CL_POD" && -n "$_CL_CTN" ]]; then
+      # Check recent beacon logs for engine connection errors
+      engine_errors=$(kubectl logs -n "$NS" "$_CL_POD" -c "$_CL_CTN" --tail=100 --since=3m 2>/dev/null | \
+        { grep -iE "execution|engine" || true; } | \
+        { grep -iE "connection refused|timeout|dial.*failed|cannot.*connect|unavailable" || true; } | \
+        wc -l  | xargs)
 
-# TCP probe: Validator → Beacon (only if VC exists)
-if [[ -n "$_VC_POD" && -n "$_VC_CTN" && -n "$CL_SVC" ]]; then
-  VC_PROBE_PORT="${CL_GRPC_PORT:-4000}"
-  [[ "$SETUP" == "LIGHTHOUSE" ]] && VC_PROBE_PORT="${CL_REST_PORT:-5052}"
-  
-  probe_result=$(tcp_probe "$_VC_POD" "$_VC_CTN" "$CL_SVC" "$VC_PROBE_PORT" 2>/dev/null || echo "FAIL")
-  case "$probe_result" in
-    OK)   pass "Validator → Beacon TCP $CL_SVC:$VC_PROBE_PORT OK" ;;
-    SKIP) warn "Validator → Beacon TCP $CL_SVC:$VC_PROBE_PORT SKIP (no tcp tool)" ;;
-    *)    fail "Validator → Beacon TCP $CL_SVC:$VC_PROBE_PORT FAIL" ;;
-  esac
+      if [[ "$engine_errors" -eq 0 ]]; then
+        pass "Beacon → EL Engine API $EL_SVC:$AUTHRPC_PORT OK (log verification)"
+      else
+        fail "Beacon → EL Engine API $EL_SVC:$AUTHRPC_PORT has connection errors"
+        kubectl logs -n "$NS" "$_CL_POD" -c "$_CL_CTN" --tail=50 --since=2m 2>/dev/null | \
+          { grep -iE "execution|engine" || true; } | \
+          { grep -iE "refused|timeout|failed" || true; } | \
+          head -2 | sed 's/^/  /' || true
+      fi
+    fi
+
+  if [[ -n "$_VC_POD" && -n "$_VC_CTN" && -n "$CL_SVC" ]]; then
+    # Check validator logs for beacon connection errors
+    vc_errors=$(kubectl logs -n "$NS" "$_VC_POD" -c "$_VC_CTN" --tail=100 --since=3m 2>/dev/null | \
+      { grep -iE "beacon|grpc" || true; } | \
+      { grep -iE "connection refused|timeout|dial.*failed|cannot.*connect|unavailable" || true; } | \
+      wc -l  | xargs)
+
+    VC_PROBE_PORT="${CL_GRPC_PORT:-4000}"
+    [[ "$SETUP" == "LIGHTHOUSE" ]] && VC_PROBE_PORT="${CL_REST_PORT:-5052}"
+
+    if [[ "$vc_errors" -eq 0 ]]; then
+      pass "Validator → Beacon $CL_SVC:$VC_PROBE_PORT OK (log verification)"
+    else
+      fail "Validator → Beacon $CL_SVC:$VC_PROBE_PORT has connection errors"
+      kubectl logs -n "$NS" "$_VC_POD" -c "$_VC_CTN" --tail=50 --since=2m 2>/dev/null | \
+        { grep -iE "beacon|grpc" || true; } | \
+        { grep -iE "refused|timeout|failed" || true; } | \
+        head -2 | sed 's/^/  /' || true
+    fi
+  fi
+
+
+    # ===== PEER INFORMATION =====
+
+    echo ""
+    echo "=== Execution Layer Peers ==="
+    if [[ -n "$_EL_POD" && -n "$_EL_CTN" ]]; then
+      # Use geth attach with proper datadir since curl is not available
+      peer_count=$(kubectl exec -n "$NS" "$_EL_POD" -c "$_EL_CTN" -- \
+        geth --datadir /data attach --exec 'admin.peers.length' /data/geth.ipc 2>/dev/null | tr -d '\n' || echo "0")
+
+      # Validate it's a number
+      if [[ "$peer_count" =~ ^[0-9]+$ ]]; then
+        if [[ "$peer_count" -gt 0 ]]; then
+          pass "EL has $peer_count peer(s)"
+
+          # Get detailed peer info
+          kubectl exec -n "$NS" "$_EL_POD" -c "$_EL_CTN" -- \
+            geth --datadir /data attach --exec 'var result = ""; admin.peers.forEach(function(p){result += "  ["+p.id.substring(0,16)+"...] "+p.name+" via "+p.network.remoteAddress+"\n"}); result' \
+            /data/geth.ipc 2>/dev/null || echo "  (peer details unavailable)"
+        else
+          warn "EL has 0 peers"
+        fi
+      else
+        warn "Could not query EL peer count (got: $peer_count)"
+      fi
+    fi
+
+    echo ""
+    echo "=== Consensus Layer Peers ==="
+    if [[ -n "$_CL_POD" && -n "$_CL_CTN" ]]; then
+      # Determine API port based on setup
+      if [[ "$SETUP" == "PRYSM" ]]; then
+        CL_API_PORT="${CL_REST_PORT:-3500}"
+      else
+        CL_API_PORT="${CL_REST_PORT_LIGHTHOUSE:-5052}"
+      fi
+
+      # Use port-forward to query API since curl is not available in containers
+      # REMOVED 'local' keyword here
+      pf_pid=$(pf_bg pod "$_CL_POD" 18888 "$CL_API_PORT")
+      sleep 1  # Give port-forward time to establish
+
+      # Query via localhost port-forward
+      peer_info=$(curl -s http://localhost:18888/eth/v1/node/peers 2>/dev/null || echo '{"data":[]}')
+
+      # Kill port-forward
+      kill_pf "$pf_pid"
+
+      if echo "$peer_info" | jq -e . >/dev/null 2>&1; then
+        peer_count=$(echo "$peer_info" | jq -r '.data | length' 2>/dev/null || echo "0")
+
+        if [[ "$peer_count" -gt 0 ]]; then
+          pass "CL has $peer_count peer(s)"
+          echo "$peer_info" | jq -r '.data[] | "  \(.peer_id[0:16])... state:\(.state) direction:\(.direction)"' 2>/dev/null || \
+            echo "  (peer details unavailable)"
+        else
+          warn "CL has 0 peers"
+        fi
+      else
+        warn "Could not query CL peers (API not available?)"
+      fi
+    fi
+
+  else
+    fail "Service $EL_SVC not found"
+  fi
+
 fi

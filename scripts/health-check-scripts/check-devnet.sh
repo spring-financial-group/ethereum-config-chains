@@ -73,37 +73,48 @@ echo "${BLU}╔═════════════════════�
 echo "${BLU}║   VALIDATOR BLOCK PROPOSALS   ║${NC}"
 echo "${BLU}╚═══════════════════════════════╝${NC}"
 
-# Check block proposals from both validators
+
+echo ""
 banner "Block Proposals"
 
-PRYSM_BLOCKS=0
-LH_BLOCKS=0
+# Get container names first
+prysm_vc_container=$(kubectl get pod -n devnet validator-devnet-prysm-0 -o jsonpath='{.spec.containers[0].name}' 2>/dev/null || echo "prysm")
+lighthouse_vc_container=$(kubectl get pod -n devnet validator-devnet-lighthouse-0 -o jsonpath='{.spec.containers[0].name}' 2>/dev/null || echo "lighthouse-validator")
 
-if [[ -n "$VC_POD" ]]; then
-  PRYSM_BLOCKS=$(kubectl logs "$VC_POD" -n "$NS" -c "$VC_CTN" 2>/dev/null | grep -c '"Submitted new block"' || echo "0")
-  echo "${GRN}Prysm Validator:${NC} $PRYSM_BLOCKS blocks proposed"
-  if [[ "$PRYSM_BLOCKS" -gt 0 ]]; then
-    pass "Prysm validator is proposing blocks"
-  else
-    warn "Prysm validator has not proposed any blocks yet"
-  fi
+# Prysm validator block proposals (search ALL logs)
+prysm_blocks=$(kubectl logs -n devnet validator-devnet-prysm-0 -c "$prysm_vc_container" --tail=-1 2>/dev/null | \
+  { grep "Submitted new block" || true; } | wc -l)
+prysm_blocks=$(echo "$prysm_blocks" | tr -d '\n' | xargs)
+
+echo "Prysm Validator: $prysm_blocks blocks proposed"
+if [[ "$prysm_blocks" -gt 0 ]]; then
+  pass "Prysm validator is proposing blocks"
 else
-  warn "Prysm validator pod not found"
+  warn "Prysm validator has not proposed any blocks yet (may not have been assigned a slot)"
 fi
 
-if [[ -n "$VC_POD_LH" ]]; then
-  LH_BLOCKS=$(kubectl logs "$VC_POD_LH" -n "$NS" -c "$VC_CTN_LH" 2>/dev/null | grep -c "Successfully published block" || echo "0")
-  echo "${GRN}Lighthouse Validator:${NC} $LH_BLOCKS blocks proposed"
-  if [[ "$LH_BLOCKS" -gt 0 ]]; then
-    pass "Lighthouse validator is proposing blocks"
-  else
-    warn "Lighthouse validator has not proposed any blocks yet"
-  fi
+# Lighthouse validator block proposals (search ALL logs)
+lighthouse_blocks=$(kubectl logs -n devnet validator-devnet-lighthouse-0 -c "$lighthouse_vc_container" --tail=-1 2>/dev/null | \
+  { grep "Successfully published block" || true; } | wc -l)
+lighthouse_blocks=$(echo "$lighthouse_blocks" | tr -d '\n' | xargs)
+
+echo "Lighthouse Validator: $lighthouse_blocks blocks proposed"
+if [[ "$lighthouse_blocks" -gt 0 ]]; then
+  pass "Lighthouse validator is proposing blocks"
 else
-  warn "Lighthouse validator pod not found"
+  warn "Lighthouse validator has not proposed any blocks yet (may not have been assigned a slot)"
 fi
 
-TOTAL_BLOCKS=$((PRYSM_BLOCKS + LH_BLOCKS))
+# Calculate total (useful for overall health check)
+total_blocks=$((prysm_blocks + lighthouse_blocks))
+
+# Check that at least ONE validator is working
+if [[ "$total_blocks" -gt 0 ]]; then
+  pass "Network is producing blocks (total: $total_blocks)"
+else
+  warn "No blocks proposed yet by any validator (validators may be active but waiting for slot assignment)"
+fi
+
 
 echo
 echo "${BLU}================================${NC}"
