@@ -102,7 +102,7 @@ fetch_bundle() {
     rm -f "$raw" "$tmp"
     return 1
   fi
-  
+
   local count
   count="$("$TAR_BIN" tzf "$tmp" | wc -l | awk '{print $1}')"
   if [[ "$count" -eq 0 ]]; then
@@ -164,13 +164,17 @@ mkdir -p "$VC_DIR" "$KEYGEN_DIR"
 # =========================
 if [[ "${SKIP_VC:-0}" -eq 0 ]]; then
   echo "=== Fetching VC bundle ==="
-  vc_tgz="$RAW_ROOT/vc_bundle.tgz"
-  if fetch_bundle "$VC_SERVICE" "$vc_tgz" "/root/.lighthouse/custom/validators /root/.lighthouse/custom/slashing_protection.sqlite /validator-keys"; then
-    extract_bundle "$vc_tgz" "$VC_DIR"
-    echo "✓ VC bundle extracted"
+  # Check if VC service exists
+  if kurtosis service inspect "$ENCLAVE" "$VC_SERVICE" >/dev/null 2>&1; then
+    vc_tgz="$RAW_ROOT/vc_bundle.tgz"
+    if fetch_bundle "$VC_SERVICE" "$vc_tgz" "/root/.lighthouse/custom/validators /root/.lighthouse/custom/slashing_protection.sqlite /validator-keys"; then
+      extract_bundle "$vc_tgz" "$VC_DIR"
+      echo "✓ VC bundle extracted"
+    else
+      echo "WARNING: Failed to fetch VC bundle (continuing anyway)" >&2
+    fi
   else
-    echo "ERROR: Failed to fetch VC bundle" >&2
-    exit 1
+    echo "ℹ VC service '$VC_SERVICE' not found, skipping"
   fi
 else
   echo "SKIP_VC=1"
@@ -185,7 +189,7 @@ if [[ "${SKIP_KEYGEN:-0}" -eq 0 ]]; then
   keygen_tgz="$RAW_ROOT/keygen_bundle.tgz"
   status_keygen="$(get_service_status "$KEYGEN_SERVICE")"
   echo "Keygen service status: $status_keygen"
-  
+
   if fetch_bundle "$KEYGEN_SERVICE" "$keygen_tgz" "$KEYGEN_PATHS"; then
     extract_bundle "$keygen_tgz" "$KEYGEN_DIR"
     echo "✓ Keygen bundle extracted"
@@ -232,14 +236,21 @@ echo "✓ Found $keystore_count keystores"
 echo
 
 # =========================
-# 4) Teku secrets
+# 4) Teku secrets - FIXED!
 # =========================
 echo "=== Assembling Teku secrets ==="
 mkdir -p "$TEKU_DIR"
 
+# Check VC bundle first
 if [ -d "$VC_DIR/validator-keys/teku-secrets" ]; then
   echo "Copying teku-secrets from VC bundle"
   cp -f "$VC_DIR/validator-keys/teku-secrets/"*.txt "$TEKU_DIR/" 2>/dev/null || true
+fi
+
+# Check keygen bundle - THIS WAS MISSING!
+if [ -d "$KEYGEN_DIR/node-0-keystores/teku-secrets" ]; then
+  echo "Copying teku-secrets from keygen bundle"
+  cp -f "$KEYGEN_DIR/node-0-keystores/teku-secrets/"*.txt "$TEKU_DIR/" 2>/dev/null || true
 fi
 
 teku_count=$(find "$TEKU_DIR" -name "*.txt" -type f 2>/dev/null | wc -l | awk '{print $1}')
@@ -261,14 +272,11 @@ else
   for teku_secret in "$TEKU_DIR"/0x*.txt; do
     [ -f "$teku_secret" ] || continue
     pubkey=$(basename "$teku_secret" .txt)
-    
+
     if [ -d "$NIMBUS_DIR/$pubkey" ]; then
-      if base64 --decode < "$teku_secret" > "$NIMBUS_DIR/$pubkey/secrets.txt" 2>/dev/null; then
-        secrets_created=$((secrets_created + 1))
-      else
-        cp "$teku_secret" "$NIMBUS_DIR/$pubkey/secrets.txt"
-        secrets_created=$((secrets_created + 1))
-      fi
+      # Just copy directly, no base64 decode needed
+      cp "$teku_secret" "$NIMBUS_DIR/$pubkey/secrets.txt"
+      secrets_created=$((secrets_created + 1))
     fi
   done
   echo "✓ Created $secrets_created secrets"

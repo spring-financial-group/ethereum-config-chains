@@ -31,14 +31,14 @@ image:
   tag: latest
 
 extraVolumes:
-  - name: validator-keystores
+  - name: validator-keystores-lighthouse
     secret:
-      secretName: validator-keystores
+      secretName: validator-keystores-lighthouse
   - name: imported-keys
     emptyDir: {}
 
 extraVolumeMounts:
-  - name: validator-keystores
+  - name: validator-keystores-lighthouse
     mountPath: /secrets
     readOnly: true
   - name: imported-keys
@@ -98,7 +98,7 @@ initContainers:
         ls -laR /imported-keys/validators/
 
     volumeMounts:
-      - name: validator-keystores
+      - name: validator-keystores-lighthouse
         mountPath: /secrets
         readOnly: true
       - name: imported-keys

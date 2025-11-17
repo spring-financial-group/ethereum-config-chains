@@ -96,8 +96,8 @@ else
 
           # Get detailed peer info
           kubectl exec -n "$NS" "$_EL_POD" -c "$_EL_CTN" -- \
-            geth --datadir /data attach --exec 'var result = ""; admin.peers.forEach(function(p){result += "  ["+p.id.substring(0,16)+"...] "+p.name+" via "+p.network.remoteAddress+"\n"}); result' \
-            /data/geth.ipc 2>/dev/null || echo "  (peer details unavailable)"
+            geth --datadir /data attach --exec 'admin.peers.forEach(function(p){console.log("  ["+p.id.substring(0,16)+"...] "+p.name+" via "+p.network.remoteAddress)})' \
+            /data/geth.ipc 2>&1 | grep "^\s*\[" || echo "  (peer details unavailable)"
         else
           warn "EL has 0 peers"
         fi
