@@ -115,6 +115,35 @@ else
   warn "No blocks proposed yet by any validator (validators may be active but waiting for slot assignment)"
 fi
 
+echo ""
+echo "╔═══════════════════════════════╗"
+echo "║   FEE RECIPIENT BALANCES      ║"
+echo "╚═══════════════════════════════╝"
+echo ""
+
+# Fee recipient addresses
+PRYSM_FEE="0x1111111111111111111111111111111111111111"
+LIGHTHOUSE_FEE="0x2222222222222222222222222222222222222222"
+
+echo ">>> Fee Recipients"
+
+# Get Prysm balance
+prysm_balance=$(kubectl exec -n "$NS" geth-devnet-0 -c geth -- sh -c "HOME=/tmp geth attach --exec 'web3.fromWei(eth.getBalance(\"$PRYSM_FEE\"), \"ether\")' /data/geth.ipc" 2>/dev/null | tail -1)
+echo "Prysm fee recipient ($PRYSM_FEE): $prysm_balance ETH"
+
+# Get Lighthouse balance
+lighthouse_balance=$(kubectl exec -n "$NS" geth-lighthouse-0 -c geth -- sh -c "HOME=/tmp geth attach --exec 'web3.fromWei(eth.getBalance(\"$LIGHTHOUSE_FEE\"), \"ether\")' /data/geth.ipc" 2>/dev/null | tail -1)
+echo "Lighthouse fee recipient ($LIGHTHOUSE_FEE): $lighthouse_balance ETH"
+
+# Check if both have earned fees
+if [[ $(echo "$prysm_balance > 0" | bc -l) -eq 1 ]] && [[ $(echo "$lighthouse_balance > 0" | bc -l) -eq 1 ]]; then
+    echo "PASS Both validators earning fees"
+elif [[ $(echo "$prysm_balance > 0" | bc -l) -eq 1 ]] || [[ $(echo "$lighthouse_balance > 0" | bc -l) -eq 1 ]]; then
+    echo "WARN Only one validator has earned fees (may need more time)"
+else
+    echo "INFO No fees earned yet (check fee recipient configuration)"
+fi
+echo
 
 echo
 echo "${BLU}================================${NC}"
