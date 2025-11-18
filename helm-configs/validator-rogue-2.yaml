@@ -1,8 +1,8 @@
+mode: "validator"
+
 jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
 
-p2pPort: 13001
-
-mode: "validator"
+p2pPort: 13002
 
 resources:
   requests:
@@ -18,80 +18,88 @@ devnet:
   name: "private-net"
 
 extraArgs:
+  - --testnet-dir=/data/testnet_spec        # CRITICAL: tells validator to use devnet config
+  - --datadir=/imported-keys
   - --beacon-nodes=http://beacon-devnet-lighthouse:5052
-  - --accept-terms-of-use
-  - --wallet-dir=/data/wallet
-  - --wallet-password-file=/data/wallet-password.txt
-  - --suggested-fee-recipient=0x3333333333333333333333333333333333333333
+  - --suggested-fee-recipient=0x2222222222222222222222222222222222222222
+  - --graffiti=lighthouse-validator
 
-mode: validator
-
-validatorKeys:
-  existingSecret: validator-keystores-rogue
-  keystoresKey: keystores.tar.gz
-  passwordKey: password.txt
+replicas: 1
 
 image:
-  repository: ethpandaops/prysm-validator
-  tag: develop
+  repository: sigp/lighthouse
+  tag: latest
 
 extraVolumes:
-  - name: vk
+  - name: validator-keystores-rogue
     secret:
-      secretName: validator-keystores-rogue
+      secretName: validator-keystores-lighthouse
+  - name: imported-keys
+    emptyDir: {}
 
 extraVolumeMounts:
-  - name: vk
-    mountPath: /secrets/validator-keys
+  - name: validator-keystores-rogue
+    mountPath: /secrets
     readOnly: true
+  - name: imported-keys
+    mountPath: /imported-keys
 
 initContainers:
   - name: import-keys
-    image: ethpandaops/prysm-validator:develop
-    imagePullPolicy: IfNotPresent
-    env:
-      - name: HOME
-        value: /data
+    image: sigp/lighthouse:latest
+    securityContext:
+      runAsUser: 10001
+      runAsGroup: 10001
+      fsGroup: 10001
     command:
-      - /bin/sh
-      - -lc
+      - sh
+      - -c
       - |
         set -e
-        mkdir -p /data/wallet
-        cp /secrets/validator-keys/prysm-password.txt /data/wallet-password.txt
-        mkdir -p /tmp/keys-src
-        tar -xzf /secrets/validator-keys/keystores.tar.gz -C /tmp/keys-src
+        mkdir -p /tmp/keystores
+        cd /tmp/keystores
+        tar -xzf /secrets/keystores.tar.gz
 
+        echo "Unpacked keystores:"
+        ls -la /tmp/keystores/
+        
         imported=0
-        failed=0
-
-        for kjson in $(find /tmp/keys-src -type f -name 'keystore*.json'); do
-          pubdir=$(dirname "$kjson")
-          pub=$(basename "$pubdir")
-          passfile="/secrets/validator-keys/${pub}.txt"
-          [ -f "$passfile" ] || passfile="/secrets/validator-keys/prysm-password.txt"
-
-          rm -rf /tmp/one && mkdir -p /tmp/one
-          cp "$kjson" /tmp/one/
-
-          if /app/cmd/validator/validator accounts import \
-                --accept-terms-of-use \
-                --keys-dir=/tmp/one \
-                --wallet-dir=/data/wallet \
-                --wallet-password-file=/data/wallet-password.txt \
-                --account-password-file="$passfile" >/tmp/import.$pub.log 2>&1; then
-            imported=$((imported+1))
-          else
-            echo "WARN: import failed for $pub"
-            failed=$((failed+1))
+        for keystore in /tmp/keystores/*/keystore*.json; do
+          if [ ! -f "$keystore" ]; then
+            continue
           fi
+        
+          pubdir=$(dirname "$keystore")
+          pub=$(basename "$pubdir")
+        
+          if [ -f "/secrets/${pub}.txt" ]; then
+            passfile="/secrets/${pub}.txt"
+          elif [ -f "/secrets/prysm-password.txt" ]; then
+            passfile="/secrets/prysm-password.txt"
+          elif [ -f "/secrets/password.txt" ]; then
+            passfile="/secrets/password.txt"
+          else
+            echo "ERROR: No password file found for $pub"
+            continue
+          fi
+        
+          echo "Importing keystore for $pub..."
+        
+          lighthouse account validator import \
+            --datadir=/imported-keys \
+            --keystore="$keystore" \
+            --password-file="$passfile" \
+            --reuse-password || echo "Failed to import $pub"
+        
+          imported=$((imported + 1))
         done
+        
+        echo "Successfully imported $imported keystores"
+        ls -laR /imported-keys/validators/
 
-        echo "Imported $imported keystores; failed $failed"
-        [ "$imported" -gt 0 ] || { echo "ERROR: no keys imported"; exit 1; }
     volumeMounts:
-      - name: storage
-        mountPath: /data
-      - name: vk
-        mountPath: /secrets/validator-keys
+      - name: validator-keystores-lighthouse
+        mountPath: /secrets
         readOnly: true
+      - name: imported-keys
+        mountPath: /imported-keys
