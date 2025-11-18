@@ -15,16 +15,20 @@ resources:
 extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
-  - --min-sync-peers=0
+
+  # let it actually find peers and sync
+  - --p2p-max-peers=50
+  - --min-sync-peers=1
+
+  #- --bootstrap-node=enr:-Mq4QACg1tzQ6d3vBu54V7ldx6_GvBWU_kULorUBBIDPsJ6fIqnj9dIoXfbvRaIZa8pzgMHxtVYDHW0fMkxDwaFfRVWGAZqNcGqHh2F0dG5ldHOIAAAAAAAAAACEZXRoMpDRHCV2cAAAOP__________gmlkgnY0gmlwhAr0AhiEcXVpY4IyyIlzZWNwMjU2azGhA2wOB9T0p3oRSDzuMhPqGtwObGLto_L-aZ2H7ykHnHqhiHN5bmNuZXRzAIN0Y3CCMsmDdWRwgjLJ
+
+  # checkpoint from the good beacon
+  #- --checkpoint-state=/checkpoint/state.ssz
+  #- --checkpoint-block=/checkpoint/block.ssz
+
   - --no-discovery
   - --p2p-max-peers=0
-
-  # We can't use this to sync as were trying to start 2 Beacon nodes with this config - one for each rogue
-  # but we want them to start from the same state and starting one a little later wills top this
-  # so we have a job that gets the states from the beacon node running and these two pick it up
-  # - --checkpoint-sync-url=http://beacon-devnet-prysm:3500
-  - --checkpoint-state=/checkpoint/state.ssz
-  - --checkpoint-block=/checkpoint/block.ssz
+  - --min-sync-peers=0
 
 extraVolumes:
   - name: checkpoint

@@ -67,10 +67,8 @@ kubectl get pods -n "$NS" | grep rogue-prysm
 
 echo ""
 echo ">>> Recent Attestations from Rogue Validators"
-echo "Replica 0:"
-kubectl logs -n "$NS" validator-devnet-rogue-prysm-0 --tail=5 | grep -i "attestation\|proposal" || echo "  (no recent activity)"
+kubectl logs -n "$NS" validator-devnet-rogue-1-prysm-0 --tail=5 | grep -i "attestation\|proposal" || echo "  (no recent activity)"
 echo ""
-echo "Replica 1:"
-kubectl logs -n "$NS" validator-devnet-rogue-prysm-1 --tail=5 | grep -i "attestation\|proposal" || echo "  (no recent activity)"
+kubectl logs -n "$NS" validator-devnet-rogue-2-prysm-0 --tail=5 | grep -i "attestation\|proposal" || echo "  (no recent activity)"
 
 echo ""
