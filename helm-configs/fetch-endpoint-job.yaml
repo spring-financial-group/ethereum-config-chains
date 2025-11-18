@@ -1,0 +1,37 @@
+# fetch-checkpoint-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fetch-checkpoint
+  namespace: devnet
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: cm-writer-sa
+      containers:
+        - name: fetch
+          image: curlimages/curl
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Fetching checkpoint state..."
+              curl -f -o /checkpoint/state.ssz \
+                -H "Accept: application/octet-stream" \
+                http://beacon-devnet-prysm:3500/eth/v2/debug/beacon/states/finalized
+              
+              echo "Fetching checkpoint block..."
+              curl -f -o /checkpoint/block.ssz \
+                -H "Accept: application/octet-stream" \
+                http://beacon-devnet-prysm:3500/eth/v2/beacon/blocks/finalized
+              
+              echo "Checkpoint saved!"
+              ls -lh /checkpoint/
+          volumeMounts:
+            - name: checkpoint
+              mountPath: /checkpoint
+      volumes:
+        - name: checkpoint
+          persistentVolumeClaim:
+            claimName: checkpoint-data

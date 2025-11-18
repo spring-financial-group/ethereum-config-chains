@@ -1,8 +1,8 @@
-mode: "validator"
-
 jwt: 0xfad2709d0bb03bf0e8ba3c99bea194575d3e98863133d1af638ed056d1d59345
 
-p2pPort: 13002
+p2pPort: 13001
+
+mode: "validator"
 
 resources:
   requests:
@@ -18,134 +18,87 @@ devnet:
   name: "private-net"
 
 extraArgs:
-  - --testnet-dir=/data/testnet_spec
-  - --datadir=/imported-keys
-  - --beacon-nodes=http://beacon-devnet-lighthouse:5052
+  - --beacon-rpc-provider=beacon-devnet-rogue-2-prysm:4000
+  - --accept-terms-of-use
+  - --wallet-dir=/data/wallet
+  - --wallet-password-file=/data/wallet-password.txt
   - --suggested-fee-recipient=0x3333333333333333333333333333333333333333
-  - --graffiti=rogue-validator-2
 
-replicas: 1
+mode: validator
+
+validatorKeys:
+  existingSecret: validator-keystores-rogue
+  keystoresKey: keystores.tar.gz
+  passwordKey: password.txt
 
 image:
-  repository: sigp/lighthouse
-  tag: latest
+  repository: ethpandaops/prysm-validator
+  tag: develop
 
 extraVolumes:
-  - name: validator-keystores-rogue
+  - name: vk
     secret:
       secretName: validator-keystores-rogue
-  - name: imported-keys
-    emptyDir: {}
 
 extraVolumeMounts:
-  - name: validator-keystores-rogue
-    mountPath: /secrets
+  - name: vk
+    mountPath: /secrets/validator-keys
     readOnly: true
-  - name: imported-keys
-    mountPath: /imported-keys
 
 initContainers:
   - name: import-keys
-    image: sigp/lighthouse:latest
-    securityContext:
-      runAsUser: 10001
-      runAsGroup: 10001
+    image: ethpandaops/prysm-validator:develop
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: HOME
+        value: /data
     command:
-      - sh
-      - -c
+      - /bin/sh
+      - -lc
       - |
         set -e
-        mkdir -p /tmp/keystores
-        cd /tmp/keystores
-        tar -xzf /secrets/keystores.tar.gz
-
-        echo "Unpacked keystores:"
-        ls -la /tmp/keystores/
         
+        # REMOVE OLD DATA (slashing protection DB, wallet, everything)
+        echo "Cleaning old validator data..."
+        rm -rf /data/wallet
+        rm -rf /data/validator-db
+        rm -rf /data/slashing-protection*
+        
+        mkdir -p /data/wallet
+        cp /secrets/validator-keys/prysm-password.txt /data/wallet-password.txt
+        mkdir -p /tmp/keys-src
+        tar -xzf /secrets/validator-keys/keystores.tar.gz -C /tmp/keys-src
+
         imported=0
-        for keystore in /tmp/keystores/*/keystore*.json; do
-          if [ ! -f "$keystore" ]; then
-            continue
-          fi
-        
-          pubdir=$(dirname "$keystore")
+        failed=0
+
+        for kjson in $(find /tmp/keys-src -type f -name 'keystore*.json'); do
+          pubdir=$(dirname "$kjson")
           pub=$(basename "$pubdir")
-        
-          if [ -f "/secrets/${pub}.txt" ]; then
-            passfile="/secrets/${pub}.txt"
-          elif [ -f "/secrets/prysm-password.txt" ]; then
-            passfile="/secrets/prysm-password.txt"
-          elif [ -f "/secrets/password.txt" ]; then
-            passfile="/secrets/password.txt"
+          passfile="/secrets/validator-keys/${pub}.txt"
+          [ -f "$passfile" ] || passfile="/secrets/validator-keys/prysm-password.txt"
+
+          rm -rf /tmp/one && mkdir -p /tmp/one
+          cp "$kjson" /tmp/one/
+
+          if /app/cmd/validator/validator accounts import \
+                --accept-terms-of-use \
+                --keys-dir=/tmp/one \
+                --wallet-dir=/data/wallet \
+                --wallet-password-file=/data/wallet-password.txt \
+                --account-password-file="$passfile" >/tmp/import.$pub.log 2>&1; then
+            imported=$((imported+1))
           else
-            echo "ERROR: No password file found for $pub"
-            continue
+            echo "WARN: import failed for $pub"
+            failed=$((failed+1))
           fi
-        
-          echo "Importing keystore for $pub..."
-        
-          lighthouse account validator import \
-            --datadir=/imported-keys \
-            --keystore="$keystore" \
-            --password-file="$passfile" \
-            --reuse-password || echo "Failed to import $pub"
-        
-          imported=$((imported + 1))
         done
-        
-        echo "Successfully imported $imported keystores"
-        ls -laR /imported-keys/validators/
 
+        echo "Imported $imported keystores; failed $failed"
+        [ "$imported" -gt 0 ] || { echo "ERROR: no keys imported"; exit 1; }
     volumeMounts:
-      - name: validator-keystores-rogue
-        mountPath: /secrets
+      - name: storage
+        mountPath: /data
+      - name: vk
+        mountPath: /secrets/validator-keys
         readOnly: true
-      - name: imported-keys
-        mountPath: /imported-keys
-
-  - name: reset-slashing-db
-      image: alpine:latest
-      securityContext:
-        runAsUser: 10001
-        runAsGroup: 10001
-      command:
-        - /bin/sh
-        - -c
-        - |
-          echo "🔥 RESETTING SLASHING PROTECTION FOR DEMO 🔥"
-          
-          # Install sqlite3
-          apk add --no-cache sqlite
-          
-          # Remove old slashing protection
-          rm -f /imported-keys/validators/slashing_protection.sqlite*
-          
-          # Create empty slashing protection database with proper schema
-          sqlite3 /imported-keys/validators/slashing_protection.sqlite << 'EOF'
-          CREATE TABLE IF NOT EXISTS signed_blocks (
-            id INTEGER PRIMARY KEY,
-            public_key BLOB NOT NULL,
-            slot INTEGER NOT NULL,
-            signing_root BLOB NOT NULL,
-            UNIQUE(public_key, slot)
-          );
-          CREATE TABLE IF NOT EXISTS signed_attestations (
-            id INTEGER PRIMARY KEY,
-            public_key BLOB NOT NULL,
-            source_epoch INTEGER NOT NULL,
-            target_epoch INTEGER NOT NULL,
-            signing_root BLOB NOT NULL,
-            UNIQUE(public_key, target_epoch)
-          );
-          CREATE INDEX IF NOT EXISTS idx_blocks_pubkey_slot ON signed_blocks(public_key, slot);
-          CREATE INDEX IF NOT EXISTS idx_attestations_pubkey ON signed_attestations(public_key, source_epoch, target_epoch);
-          EOF
-          
-          chmod 600 /imported-keys/validators/slashing_protection.sqlite
-          
-          echo "✅ Fresh empty slashing protection DB created"
-          ls -la /imported-keys/validators/
-
-      volumeMounts:
-        - name: imported-keys
-          mountPath: /imported-keys

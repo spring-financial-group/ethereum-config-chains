@@ -57,11 +57,7 @@ initContainers:
       - -lc
       - |
         set -e
-        mkdir -p /data/wallet
-        cp /secrets/validator-keys/prysm-password.txt /data/wallet-password.txt
-        mkdir -p /tmp/keys-src
-        tar -xzf /secrets/validator-keys/keystores.tar.gz -C /tmp/keys-src
-
+        
         imported=0
         failed=0
 

@@ -1,0 +1,13 @@
+# checkpoint-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: checkpoint-data
+  namespace: devnet
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods can read!
+  resources:
+    requests:
+      storage: 10Mi
+  storageClassName: azurefile  # Or your cluster's RWX storage class
