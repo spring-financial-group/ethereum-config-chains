@@ -104,32 +104,48 @@ initContainers:
         mountPath: /imported-keys
 
   - name: reset-slashing-db
-    image: sigp/lighthouse:latest
-    securityContext:
-      runAsUser: 10001
-      runAsGroup: 10001
-    command:
-      - /bin/sh
-      - -c
-      - |
-        echo "🔥 RESETTING LIGHTHOUSE SLASHING PROTECTION FOR DEMO 🔥"
-        
-        # Remove old slashing protection
-        rm -f /imported-keys/validators/slashing_protection.sqlite
-        rm -f /imported-keys/validators/slashing_protection.sqlite-shm
-        rm -f /imported-keys/validators/slashing_protection.sqlite-wal
-        
-        # Create new empty slashing protection DB using Lighthouse
-        # This initializes a fresh DB with no history
-        lighthouse account validator slashing-protection \
-          --datadir=/imported-keys \
-          --testnet-dir=/data/testnet_spec \
-          import /dev/null 2>/dev/null || echo "Creating fresh slashing DB"
-        
-        echo "Fresh slashing protection DB created - validator has no memory of past attestations"
-        ls -la /imported-keys/validators/
-    volumeMounts:
-      - name: imported-keys
-        mountPath: /imported-keys
-      - name: storage
-        mountPath: /data
+      image: alpine:latest
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "🔥 RESETTING SLASHING PROTECTION FOR DEMO 🔥"
+          
+          # Install sqlite3
+          apk add --no-cache sqlite
+          
+          # Remove old slashing protection
+          rm -f /imported-keys/validators/slashing_protection.sqlite*
+          
+          # Create empty slashing protection database with proper schema
+          sqlite3 /imported-keys/validators/slashing_protection.sqlite << 'EOF'
+          CREATE TABLE IF NOT EXISTS signed_blocks (
+            id INTEGER PRIMARY KEY,
+            public_key BLOB NOT NULL,
+            slot INTEGER NOT NULL,
+            signing_root BLOB NOT NULL,
+            UNIQUE(public_key, slot)
+          );
+          CREATE TABLE IF NOT EXISTS signed_attestations (
+            id INTEGER PRIMARY KEY,
+            public_key BLOB NOT NULL,
+            source_epoch INTEGER NOT NULL,
+            target_epoch INTEGER NOT NULL,
+            signing_root BLOB NOT NULL,
+            UNIQUE(public_key, target_epoch)
+          );
+          CREATE INDEX IF NOT EXISTS idx_blocks_pubkey_slot ON signed_blocks(public_key, slot);
+          CREATE INDEX IF NOT EXISTS idx_attestations_pubkey ON signed_attestations(public_key, source_epoch, target_epoch);
+          EOF
+          
+          chmod 600 /imported-keys/validators/slashing_protection.sqlite
+          
+          echo "✅ Fresh empty slashing protection DB created"
+          ls -la /imported-keys/validators/
+
+      volumeMounts:
+        - name: imported-keys
+          mountPath: /imported-keys
