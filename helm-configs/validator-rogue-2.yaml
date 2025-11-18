@@ -18,7 +18,7 @@ devnet:
   name: "private-net"
 
 extraArgs:
-  - --beacon-rpc-provider=beacon-devnet-prysm:4000
+  - --beacon-rpc-provider=beacon-devnet-lighthouse:5052
   - --accept-terms-of-use
   - --wallet-dir=/data/wallet
   - --wallet-password-file=/data/wallet-password.txt
