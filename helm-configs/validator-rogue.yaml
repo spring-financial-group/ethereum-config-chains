@@ -14,18 +14,8 @@ resources:
 
 devnet:
   enabled: true
-
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
-
-
-extraArgs:
-  - --beacon-rpc-provider=beacon-devnet-rogue-prysm:4000
-  - --accept-terms-of-use
-  - --wallet-dir=/data/wallet
-  - --wallet-password-file=/data/wallet-password.txt
-
-  - --suggested-fee-recipient=0x3333333333333333333333333333333333333333
 
 replicas: 2
 
@@ -40,6 +30,31 @@ image:
   repository: ethpandaops/prysm-validator
   tag: develop
 
+# Override the command to route replicas to different beacons
+command:
+  - /bin/sh
+  - -c
+  - |
+    # Get pod ordinal from hostname (validator-devnet-rogue-prysm-0 or -1)
+    POD_ORDINAL=$(echo $HOSTNAME | rev | cut -d'-' -f1 | rev)
+    
+    if [ "$POD_ORDINAL" = "0" ]; then
+      BEACON_RPC="beacon-devnet-prysm:4000"
+      echo "Replica 0 → Connecting to Prysm beacon"
+    else
+      BEACON_RPC="beacon-devnet-lighthouse:5052"
+      echo "Replica 1 → Connecting to Lighthouse beacon"
+    fi
+    
+    exec /app/cmd/validator/validator \
+      --beacon-rpc-provider=$BEACON_RPC \
+      --accept-terms-of-use \
+      --wallet-dir=/data/wallet \
+      --wallet-password-file=/data/wallet-password.txt \
+      --suggested-fee-recipient=0x3333333333333333333333333333333333333333 \
+      --datadir=/data \
+      --chain-config-file=/data/devnet/config.yaml \
+      --genesis-state=/data/devnet/genesis.ssz
 
 extraVolumes:
   - name: vk
@@ -57,7 +72,7 @@ initContainers:
     imagePullPolicy: IfNotPresent
     env:
       - name: HOME
-        value: /data  
+        value: /data
     command:
       - /bin/sh
       - -lc
