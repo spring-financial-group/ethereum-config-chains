@@ -25,7 +25,7 @@ extraArgs:
   - --wallet-dir=/data/wallet
   - --wallet-password-file=/data/wallet-password.txt
 
-  - --suggested-fee-recipient=0x1111111111111111111111111111111111111111
+  - --suggested-fee-recipient=0x3333333333333333333333333333333333333333
 
 replicas: 1
 
