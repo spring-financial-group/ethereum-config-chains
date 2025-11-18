@@ -21,7 +21,7 @@ extraArgs:
   - --testnet-dir=/data/testnet_spec
   - --datadir=/imported-keys
   - --beacon-nodes=http://beacon-devnet-lighthouse:5052
-  - --suggested-fee-recipient=0x3333333333333333333333333333333333333333  # Changed to match rogue
+  - --suggested-fee-recipient=0x3333333333333333333333333333333333333333
   - --graffiti=rogue-validator-2
 
 replicas: 1
@@ -31,14 +31,14 @@ image:
   tag: latest
 
 extraVolumes:
-  - name: validator-keystores-rogue  # Volume name
+  - name: validator-keystores-rogue
     secret:
-      secretName: validator-keystores-rogue  # ← FIXED: Use validator-keystores-rogue
+      secretName: validator-keystores-rogue
   - name: imported-keys
     emptyDir: {}
 
 extraVolumeMounts:
-  - name: validator-keystores-rogue  # ← FIXED: Must match volume name above
+  - name: validator-keystores-rogue
     mountPath: /secrets
     readOnly: true
   - name: imported-keys
@@ -97,8 +97,28 @@ initContainers:
         ls -laR /imported-keys/validators/
 
     volumeMounts:
-      - name: validator-keystores-rogue  # ← FIXED: Must match volume name
+      - name: validator-keystores-rogue
         mountPath: /secrets
         readOnly: true
+      - name: imported-keys
+        mountPath: /imported-keys
+
+  # ADD THIS: Delete slashing protection DB
+  - name: delete-slashing-db
+    image: busybox:1.34.0
+    securityContext:
+      runAsUser: 10001
+      runAsGroup: 10001
+    command:
+      - /bin/sh
+      - -c
+      - |
+        echo "🔥 DELETING LIGHTHOUSE SLASHING PROTECTION DB FOR DEMO 🔥"
+        rm -f /imported-keys/validators/slashing_protection.sqlite
+        rm -f /imported-keys/validators/slashing_protection.sqlite-shm
+        rm -f /imported-keys/validators/slashing_protection.sqlite-wal
+        echo "Slashing protection removed - validator will be vulnerable to slashing"
+        ls -la /imported-keys/validators/
+    volumeMounts:
       - name: imported-keys
         mountPath: /imported-keys
