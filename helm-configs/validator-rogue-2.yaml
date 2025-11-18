@@ -18,11 +18,11 @@ devnet:
   name: "private-net"
 
 extraArgs:
-  - --testnet-dir=/data/testnet_spec        # CRITICAL: tells validator to use devnet config
+  - --testnet-dir=/data/testnet_spec
   - --datadir=/imported-keys
   - --beacon-nodes=http://beacon-devnet-lighthouse:5052
-  - --suggested-fee-recipient=0x2222222222222222222222222222222222222222
-  - --graffiti=lighthouse-validator
+  - --suggested-fee-recipient=0x3333333333333333333333333333333333333333  # Changed to match rogue
+  - --graffiti=rogue-validator-2
 
 replicas: 1
 
@@ -31,14 +31,14 @@ image:
   tag: latest
 
 extraVolumes:
-  - name: validator-keystores-rogue
+  - name: validator-keystores-rogue  # Volume name
     secret:
-      secretName: validator-keystores-lighthouse
+      secretName: validator-keystores-rogue  # ← FIXED: Use validator-keystores-rogue
   - name: imported-keys
     emptyDir: {}
 
 extraVolumeMounts:
-  - name: validator-keystores-rogue
+  - name: validator-keystores-rogue  # ← FIXED: Must match volume name above
     mountPath: /secrets
     readOnly: true
   - name: imported-keys
@@ -50,7 +50,6 @@ initContainers:
     securityContext:
       runAsUser: 10001
       runAsGroup: 10001
-      fsGroup: 10001
     command:
       - sh
       - -c
@@ -98,7 +97,7 @@ initContainers:
         ls -laR /imported-keys/validators/
 
     volumeMounts:
-      - name: validator-keystores-lighthouse
+      - name: validator-keystores-rogue  # ← FIXED: Must match volume name
         mountPath: /secrets
         readOnly: true
       - name: imported-keys
