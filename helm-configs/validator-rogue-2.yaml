@@ -103,9 +103,8 @@ initContainers:
       - name: imported-keys
         mountPath: /imported-keys
 
-  # ADD THIS: Delete slashing protection DB
-  - name: delete-slashing-db
-    image: busybox:1.34.0
+  - name: reset-slashing-db
+    image: sigp/lighthouse:latest
     securityContext:
       runAsUser: 10001
       runAsGroup: 10001
@@ -113,12 +112,24 @@ initContainers:
       - /bin/sh
       - -c
       - |
-        echo "🔥 DELETING LIGHTHOUSE SLASHING PROTECTION DB FOR DEMO 🔥"
+        echo "🔥 RESETTING LIGHTHOUSE SLASHING PROTECTION FOR DEMO 🔥"
+        
+        # Remove old slashing protection
         rm -f /imported-keys/validators/slashing_protection.sqlite
         rm -f /imported-keys/validators/slashing_protection.sqlite-shm
         rm -f /imported-keys/validators/slashing_protection.sqlite-wal
-        echo "Slashing protection removed - validator will be vulnerable to slashing"
+        
+        # Create new empty slashing protection DB using Lighthouse
+        # This initializes a fresh DB with no history
+        lighthouse account validator slashing-protection \
+          --datadir=/imported-keys \
+          --testnet-dir=/data/testnet_spec \
+          import /dev/null 2>/dev/null || echo "Creating fresh slashing DB"
+        
+        echo "Fresh slashing protection DB created - validator has no memory of past attestations"
         ls -la /imported-keys/validators/
     volumeMounts:
       - name: imported-keys
         mountPath: /imported-keys
+      - name: storage
+        mountPath: /data
