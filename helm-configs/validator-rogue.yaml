@@ -27,7 +27,7 @@ extraArgs:
 
   - --suggested-fee-recipient=0x3333333333333333333333333333333333333333
 
-replicas: 1
+replicas: 2
 
 mode: validator
 
