@@ -18,6 +18,10 @@ devnet:
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
 
 extraArgs:
   - --beacon-rpc-provider=beacon-devnet-prysm:4000

@@ -23,6 +23,10 @@ ingress:
         - path: /
           pathType: Prefix
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "6060"
+  prometheus.io/path: "/debug/metrics/prometheus"
 
   tls:
     - hosts:

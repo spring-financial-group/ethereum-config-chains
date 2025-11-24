@@ -12,6 +12,11 @@ resources:
     cpu: "3"
     memory: "4Gi"
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
 extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use

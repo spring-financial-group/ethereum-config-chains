@@ -26,6 +26,11 @@ extraArgs:
 
 replicas: 1
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "5054"
+  prometheus.io/path: "/metrics"
+
 image:
   repository: sigp/lighthouse
   tag: latest

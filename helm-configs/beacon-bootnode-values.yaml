@@ -13,6 +13,11 @@ devnet:
 
 p2pPort: 9000
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
 p2pNodePort:
   enabled: false
 
