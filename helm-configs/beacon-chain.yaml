@@ -12,7 +12,7 @@ resources:
     cpu: "3"
     memory: "4Gi"
 
-# IN THE JX observer namespace assuming that's the cluster setup were setting this up on there will be a load of prometheus Rules that are picked up here 
+# IN THE JX observer namespace assuming that's the cluster setup were setting this up on there will be a load of prometheus Rules that are picked up here
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "8080"
