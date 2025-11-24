@@ -6,7 +6,7 @@ mode: "validator"
 
 resources:
   requests:
-    cpu: "2"
+    cpu: "1"
     memory: "3Gi"
   limits:
     cpu: "2"
