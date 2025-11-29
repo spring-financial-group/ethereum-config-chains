@@ -30,6 +30,7 @@ p2pNodePort:
 extraArgs:
   - --testnet-dir=/data/testnet_spec
   - --enr-address=beacon-bootnode-lighthouse.devnet.svc.cluster.local
+  - --disable-packet-filter
 
 extraVolumes:
   - name: bootnode-key
