@@ -22,7 +22,7 @@ extraArgs:
   - --execution-endpoint=http://geth-devnet:8551
   - --accept-terms-of-use
   - --min-sync-peers=0
-  - --bootstrap-node=enr:-Jq4QKPAR59PXTBP975ll33KkuP-bO-Cp9r9J1I5Z2kqsAHKDIKhvVWEIsby2181IRmfXkGr_WCo8yGaP52JJvjaJE0BhGV0aDKQ0RwldmAAADj__________4JpZIJ2NIJpcIQK9AM4iXNlY3AyNTZrMaEDJbiGs1rrF6wDa0xaITd_dAMZDM8NxZ8JBUrDb5y6Eq-DdWRwgiMo
+  - --bootstrap-node=enr:-Jq4QOxpmfDrci29eBdd36CA3LZ9mRqvMNwJmGL0883urbJTIm9hLwIDEiqG0Xnp6WrU-sjppiMYf7rXY5qGJ-Dkoj4BhGV0aDKQ0RwldmAAADj__________4JpZIJ2NIJpcIQK9AM-iXNlY3AyNTZrMaECZvCoxDohBv1MseyMhFl1-SnYF1ZSFIfXJV72ZV2ptbCDdWRwgiMo
 
 
 devnet:
