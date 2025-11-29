@@ -3,7 +3,7 @@ mode: "bootnode"
 
 initCharts:
   - url: https://github.com/spring-financial-group/ethereum-config-chains
-    path: network-configs/private-net
+    path: network-configs/private-net/bootnode-metadata
     configName: devnet
 
 devnet:

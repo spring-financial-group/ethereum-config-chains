@@ -1,0 +1,1 @@
+../metadata/deposit_contract_block.txt
