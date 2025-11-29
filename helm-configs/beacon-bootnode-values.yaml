@@ -10,6 +10,12 @@ devnet:
   enabled: true
   baseUrl: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs"
   name: "private-net"
+  urls:
+    depositContractBlock: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs/private-net/metadata/deposit_contract_block.txt"
+    configYaml: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs/private-net/metadata/config.yaml"
+    genesisSsz: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs/private-net/metadata/genesis.ssz"
+    bootstrapNodesYaml: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs/private-net/bootnode-metadata/bootstrap_nodes.yaml"
+    bootstrapNodesTxt: "https://raw.githubusercontent.com/spring-financial-group/ethereum-config-chains/main/network-configs/private-net/bootnode-metadata/bootstrap_nodes.txt"
 
 p2pPort: 9000
 
@@ -25,7 +31,6 @@ extraArgs:
   - --testnet-dir=/data/testnet_spec
   - --enr-address=beacon-bootnode-lighthouse.devnet.svc.cluster.local
 
-# Mount the secret to where Lighthouse expects it
 extraVolumes:
   - name: bootnode-key
     secret:
@@ -33,7 +38,7 @@ extraVolumes:
 
 extraVolumeMounts:
   - name: bootnode-key
-    mountPath: /data/network/key  # Lighthouse looks for key here
+    mountPath: /data/network/key
     subPath: key
 
 resources:
