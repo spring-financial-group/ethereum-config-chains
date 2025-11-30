@@ -138,6 +138,40 @@ install_lighthouse_beacon_and_validators() {
   sleep 120
 }
 
+install_both_beacons_and_validators() {
+  echo ""
+  echo "🔧 Installing Prysm beacon..."
+  helm upgrade --install beacon-devnet-prysm ethpandaops/prysm \
+    -f "$BASE_URL/beacon-chain.yaml" -n "$NAMESPACE"
+  echo "  ✓ beacon-devnet-prysm installed"
+
+  echo ""
+  echo "🔧 Installing Lighthouse beacon..."
+  helm upgrade --install beacon-devnet-lighthouse ethpandaops/lighthouse \
+    -f "$BASE_URL/beacon-chain-lighthouse.yaml" -n "$NAMESPACE"
+  echo "  ✓ beacon-devnet-lighthouse installed"
+
+  echo ""
+  echo "⏳ Waiting for beacons to sync (90s)..."
+  sleep 90
+
+  echo ""
+  echo "🔧 Installing Prysm validators..."
+  helm upgrade --install validator-devnet-prysm ethpandaops/prysm \
+    -f "$BASE_URL/validator.yaml" -n "$NAMESPACE"
+  echo "  ✓ validator-devnet-prysm installed"
+
+  echo ""
+  echo "🔧 Installing Lighthouse validators..."
+  helm upgrade --install validator-devnet-lighthouse ethpandaops/lighthouse \
+    -f "$BASE_URL/validator-lighthouse.yaml" -n "$NAMESPACE"
+  echo "  ✓ validator-devnet-lighthouse installed"
+
+  echo ""
+  echo "⏳ Waiting for chains to produce blocks (60s)..."
+  sleep 60
+}
+
 install_blockscout_stack() {
   echo ""
   echo "🔧 Creating the Auth Secret for Blockscout..."
@@ -237,6 +271,19 @@ case "$MODE" in
     echo "▶ Mode: blockscout-only (reinstall Blockscout stack only)"
     uninstall_blockscout_only
     install_blockscout_stack
+    final_status
+    ;;
+
+  geth)
+    echo "▶ Mode: geth (both Geth execution nodes only)"
+    install_geth_prysm_side
+    install_geth_lighthouse_side
+    final_status
+    ;;
+
+  beacons)
+    echo "▶ Mode: beacons (both beacons and validators together)"
+    install_both_beacons_and_validators
     final_status
     ;;
 
