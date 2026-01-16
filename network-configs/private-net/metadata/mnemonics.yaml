@@ -1,6 +1,6 @@
 - mnemonic: "test test test test test test test test test test test junk"  # a 24 word BIP 39 mnemonic
   start: 0  # account index to start from
-  count: 2
+  count: 64
   wd_address: 0x3Ee9b2F534be63DeFd21340B526045a4fc7b981F
   wd_prefix: 0x00
   balance: 32000000000
