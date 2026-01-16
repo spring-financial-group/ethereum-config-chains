@@ -10,7 +10,7 @@ PRESET_BASE: 'mainnet'
 # * 'holesky' - testnet
 # * 'hoodi' - testnet
 # Must match the regex: [a-z0-9\-]
-CONFIG_NAME: 'testnet' # needs to exist because of Prysm. Otherwise it conflicts with mainnet genesis
+CONFIG_NAME: 'mqube' # needs to exist because of Prysm. Otherwise it conflicts with mainnet genesis
 
 # Transition
 # ---------------------------------------------------------------
@@ -24,8 +24,8 @@ TERMINAL_BLOCK_HASH_ACTIVATION_EPOCH: 18446744073709551615
 # ---------------------------------------------------------------
 # `2**14` (= 16,384)
 MIN_GENESIS_ACTIVE_VALIDATOR_COUNT: 2
-# 2026-Jan-16 02:24:03 PM UTC
-MIN_GENESIS_TIME: 1768573443
+# 2026-Jan-16 02:59:03 PM UTC
+MIN_GENESIS_TIME: 1768575543
 # Mainnet initial fork version, recommend altering for testnets
 GENESIS_FORK_VERSION: 0x10000038
 # Some seconds
