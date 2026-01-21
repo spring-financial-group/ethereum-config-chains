@@ -29,7 +29,7 @@
       }
     },
     "depositContractAddress": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
-    "pragueTime": 1768999936
+    "pragueTime": 1769027530
   },
   "alloc": {
     "0x0000000000000000000000000000000000000000": {
@@ -925,96 +925,6 @@
     },
     "0xbC47422B98d7b978ABf1d7D93176A4a19f6D814c": {
       "balance": "1000000000000000000000000000"
-    },
-    "0x143d007ff339ae1bc0299ad80499cb7ecd422f87": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xd5c48b8f8ced23acfd50aa9c38268a57db0c13f0": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x377543222616e2db85c5100f2de7f556ab6f18bb": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xd65fe23555d5cd50669f24335fb3e37e1dd0ae61": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x73e9c7db2919fafdf8e9853ebc3243b947f5914b": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xcd3e592d89f6073e4127d0d30f0c3e1bb42bdd4a": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x93fd7d5d0f9217c4dca4639fc95276f663a6a531": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x9d7c4a011d29268d087fafe0b0d3bf1da8ac6e21": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xbd4f380d970dec900674cf43b4d5b56758ef24e0": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x01058754136c39ed196e19dd98f6ce517ede6262": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xadab86c3eb3e60f7fc1063acdc97d6c7d0cd23a8": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x58742eaba73901b42ff4495ceb1f95d05cb51a74": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x52740ec2a07cb34fb9db269f50fe36d8adb0cff2": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xa2363c279b6161c88346267c037bb576da65638b": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x925db9b1eafa85624688b3f9d4dce752757d09a1": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x7ef0a562304a0b6749bde589b65090f308014e9d": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xeb33cd2aedd8ce59f3a28236c44449a5b840ca0d": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xa89753a5a445883afe8fbefef6de2e7f38585ed9": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x9f3b2f434cdc635e90a0d5416f0afa8ab08c4cb2": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x3a635fd6a78d7ad2e0c3995df7e0f07fc35be670": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x34a7825f38206a38a40075fe1830cdb8ccc6ea7d": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xc86e9c11bee8920c7059c5cbae69277f36b9e15e": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xaeb486a79966a9c1eb69c735a58189be4fc2d257": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xaf3fbaebacfffd9015688b44c66531d87adea3d5": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xa090706de59c8a4df2c2fc47843e25f0c2379eda": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x5927c0f3ed33536d19aae084a4b2132945e67474": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xd59affeeb08c71be53218029c06681360535bb61": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0x537ab24ff71dc00090a807254286a1c72a3d6884": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xe1cc42fe00221883e3b99837423f1e97a00b4741": {
-      "balance": "0x3635c9adc5dea00000"
-    },
-    "0xe1f830bb77cf0058b460631347409bbbe0d46f89": {
-      "balance": "0x3635c9adc5dea00000"
     }
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
@@ -1024,5 +934,5 @@
   "nonce": "0x1234",
   "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "timestamp": "1768999552"
+  "timestamp": "1769027146"
 }
