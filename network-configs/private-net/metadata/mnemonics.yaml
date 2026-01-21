@@ -1,6 +1,7 @@
-- mnemonic: "test test test test test test test test test test test junk"  # a 24 word BIP 39 mnemonic
+- mnemonic: "client mad valve hair gown attend type hospital acid evidence spread fever"  # a 24 word BIP 39 mnemonic
   start: 0  # account index to start from
-  count: 64
-  wd_address: 0x3Ee9b2F534be63DeFd21340B526045a4fc7b981F
+  count: 128
+  wd_address: null
   wd_prefix: 0x00
   balance: 32000000000
+  status: 0 # 0: active, 1: slashed, 2: exited
