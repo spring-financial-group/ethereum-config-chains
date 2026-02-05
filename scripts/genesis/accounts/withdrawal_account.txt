@@ -1,0 +1,11 @@
+=== Withdrawal Account ===
+Generated on: Sat Jan 31 09:35:39 GMT 2026
+
+Address:     0x57C77A6f9F1f0144d5feDbB31B2B71c3B64549DB
+Private Key: 0x63678be879241920e19af0c909c025d3c26bb161c0a8329bc0cfcf6fc4376fdc
+
+Use when generating validator keys:
+  --eth1_withdrawal_address=0x57C77A6f9F1f0144d5feDbB31B2B71c3B64549DB
+
+Genesis alloc entry (if you want to pre-fund it):
+"0x57c77a6f9f1f0144d5fedbb31b2b71c3b64549db": { "balance": "0" }
