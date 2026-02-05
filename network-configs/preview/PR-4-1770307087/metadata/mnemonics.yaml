@@ -1,0 +1,7 @@
+- mnemonic: "divorce essay jazz lecture private web ceiling example sock theory hazard learn bench faint height marriage note cancel sight sunset loud celery planet truly"  # a 24 word BIP 39 mnemonic
+  start: 0  # account index to start from
+  count: 128
+  wd_address: null
+  wd_prefix: 0x00
+  balance: 32000000000
+  status: 0 # 0: active, 1: slashed, 2: exited
