@@ -4,6 +4,10 @@
 # This script generates genesis.json (EL) and genesis.ssz (CL) files
 # using the ethpandaops/ethereum-genesis-generator Docker image.
 #
+# Can run in two modes:
+#   1. Outside container: Uses docker run to invoke the generator
+#   2. Inside container: Calls /work/entrypoint.sh directly (auto-detected)
+#
 # Designed to run from a working directory with:
 #   ./accounts/withdrawal_account.txt
 #   ./accounts/genesis_alloc.json
@@ -22,6 +26,8 @@
 #   --output-dir DIR       Output directory (default: ./genesis)
 #   --clean                Remove existing output before generating
 #   --test                 Run local validation tests after generation
+#   --inside-container     Force inside-container mode (skip auto-detection)
+#   --outside-container    Force docker mode (skip auto-detection)
 #
 # Mnemonic resolution order:
 #   1. --mnemonic "words"          (explicit command line)
@@ -61,6 +67,8 @@ FULU_FORK_EPOCH=${FULU_FORK_EPOCH:-18446744073709551615}
 # Flags
 CLEAN=false
 TEST=false
+FORCE_INSIDE_CONTAINER=false
+FORCE_OUTSIDE_CONTAINER=false
 
 # Colors for output
 RED='\033[0;31m'
@@ -117,6 +125,14 @@ while [[ $# -gt 0 ]]; do
             TEST=true
             shift
             ;;
+        --inside-container)
+            FORCE_INSIDE_CONTAINER=true
+            shift
+            ;;
+        --outside-container)
+            FORCE_OUTSIDE_CONTAINER=true
+            shift
+            ;;
         --help|-h)
             head -35 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
             exit 0
@@ -127,6 +143,24 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Detect if running inside the ethereum-genesis-generator container
+# Check for /work/entrypoint.sh which exists in the ethpandaops container
+INSIDE_CONTAINER=false
+if [ "$FORCE_INSIDE_CONTAINER" = true ]; then
+    INSIDE_CONTAINER=true
+    log_info "Forced inside-container mode"
+elif [ "$FORCE_OUTSIDE_CONTAINER" = true ]; then
+    INSIDE_CONTAINER=false
+    log_info "Forced docker mode"
+elif [ -f "/work/entrypoint.sh" ]; then
+    INSIDE_CONTAINER=true
+    log_info "Detected running inside ethereum-genesis-generator container"
+elif ! command -v docker &> /dev/null; then
+    log_error "Docker not found and not running inside genesis container"
+    log_error "Either install Docker or run inside the ethpandaops/ethereum-genesis-generator container"
+    exit 1
+fi
 
 # Auto-detect withdrawal address from accounts directory
 if [ -z "$WITHDRAWAL_ADDRESS" ] && [ -f "./accounts/withdrawal_account.txt" ]; then
@@ -213,29 +247,76 @@ GENESIS_DATE=$(date -r "$GENESIS_TIMESTAMP" "+%Y-%m-%d %H:%M:%S UTC" 2>/dev/null
 log_info "Genesis timestamp: $GENESIS_TIMESTAMP ($GENESIS_DATE)"
 echo ""
 
-# Get absolute path for Docker mount
+# Get absolute path for Docker mount (only needed for docker mode)
 OUTPUT_DIR_ABS=$(cd "$OUTPUT_DIR" && pwd)
 
 # Generate genesis files
 log_info "Running ethereum-genesis-generator..."
-docker run --rm \
-    -v "$OUTPUT_DIR_ABS:/data" \
-    -e EL_AND_CL_MNEMONIC="$MNEMONIC" \
-    -e NUMBER_OF_VALIDATORS="$VALIDATORS" \
-    -e GENESIS_TIMESTAMP="$GENESIS_TIMESTAMP" \
-    -e GENESIS_DELAY=0 \
-    -e WITHDRAWAL_ADDRESS="$WITHDRAWAL_ADDRESS" \
-    -e CHAIN_ID="$CHAIN_ID" \
-    -e DEPOSIT_CONTRACT_ADDRESS="$DEPOSIT_CONTRACT" \
-    -e GENESIS_FORK_VERSION="$GENESIS_FORK_VERSION" \
-    -e ALTAIR_FORK_EPOCH="$ALTAIR_FORK_EPOCH" \
-    -e BELLATRIX_FORK_EPOCH="$BELLATRIX_FORK_EPOCH" \
-    -e CAPELLA_FORK_EPOCH="$CAPELLA_FORK_EPOCH" \
-    -e DENEB_FORK_EPOCH="$DENEB_FORK_EPOCH" \
-    -e ELECTRA_FORK_EPOCH="$ELECTRA_FORK_EPOCH" \
-    -e FULU_FORK_EPOCH="$FULU_FORK_EPOCH" \
-    -e EL_PREMINE_ADDRS="$PREMINE_ADDRS" \
-    ethpandaops/ethereum-genesis-generator:master all
+
+if [ "$INSIDE_CONTAINER" = true ]; then
+    # Running inside the container - export env vars and call entrypoint directly
+    log_info "Using inside-container mode - calling /work/entrypoint.sh directly"
+
+    export EL_AND_CL_MNEMONIC="$MNEMONIC"
+    export NUMBER_OF_VALIDATORS="$VALIDATORS"
+    export GENESIS_TIMESTAMP="$GENESIS_TIMESTAMP"
+    export GENESIS_DELAY=0
+    export WITHDRAWAL_ADDRESS="$WITHDRAWAL_ADDRESS"
+    export CHAIN_ID="$CHAIN_ID"
+    export DEPOSIT_CONTRACT_ADDRESS="$DEPOSIT_CONTRACT"
+    export GENESIS_FORK_VERSION="$GENESIS_FORK_VERSION"
+    export ALTAIR_FORK_EPOCH="$ALTAIR_FORK_EPOCH"
+    export BELLATRIX_FORK_EPOCH="$BELLATRIX_FORK_EPOCH"
+    export CAPELLA_FORK_EPOCH="$CAPELLA_FORK_EPOCH"
+    export DENEB_FORK_EPOCH="$DENEB_FORK_EPOCH"
+    export ELECTRA_FORK_EPOCH="$ELECTRA_FORK_EPOCH"
+    export FULU_FORK_EPOCH="$FULU_FORK_EPOCH"
+    export EL_PREMINE_ADDRS="$PREMINE_ADDRS"
+
+    # The entrypoint outputs to /data by default
+    # We need to ensure output goes to our desired location
+    ORIGINAL_PWD=$(pwd)
+    cd /work
+    /work/entrypoint.sh all
+    cd "$ORIGINAL_PWD"
+
+    # Copy generated files from /data to our output directory
+    log_info "Copying generated files from /data to $OUTPUT_DIR_ABS"
+    if [ -d "/data/metadata" ]; then
+        cp -r /data/metadata/* "$OUTPUT_DIR_ABS/" 2>/dev/null || true
+    fi
+    if [ -d "/data/custom_config_data" ]; then
+        cp -r /data/custom_config_data/* "$OUTPUT_DIR_ABS/" 2>/dev/null || true
+    fi
+    if [ -d "/data/parsed" ]; then
+        cp -r /data/parsed "$OUTPUT_DIR_ABS/" 2>/dev/null || true
+    fi
+    # Copy any top-level files
+    for f in genesis.json genesis.ssz config.yaml deposit_contract_block.txt; do
+        [ -f "/data/$f" ] && cp "/data/$f" "$OUTPUT_DIR_ABS/" 2>/dev/null || true
+    done
+else
+    # Running outside container - use docker
+    log_info "Using docker mode"
+    docker run --rm \
+        -v "$OUTPUT_DIR_ABS:/data" \
+        -e EL_AND_CL_MNEMONIC="$MNEMONIC" \
+        -e NUMBER_OF_VALIDATORS="$VALIDATORS" \
+        -e GENESIS_TIMESTAMP="$GENESIS_TIMESTAMP" \
+        -e GENESIS_DELAY=0 \
+        -e WITHDRAWAL_ADDRESS="$WITHDRAWAL_ADDRESS" \
+        -e CHAIN_ID="$CHAIN_ID" \
+        -e DEPOSIT_CONTRACT_ADDRESS="$DEPOSIT_CONTRACT" \
+        -e GENESIS_FORK_VERSION="$GENESIS_FORK_VERSION" \
+        -e ALTAIR_FORK_EPOCH="$ALTAIR_FORK_EPOCH" \
+        -e BELLATRIX_FORK_EPOCH="$BELLATRIX_FORK_EPOCH" \
+        -e CAPELLA_FORK_EPOCH="$CAPELLA_FORK_EPOCH" \
+        -e DENEB_FORK_EPOCH="$DENEB_FORK_EPOCH" \
+        -e ELECTRA_FORK_EPOCH="$ELECTRA_FORK_EPOCH" \
+        -e FULU_FORK_EPOCH="$FULU_FORK_EPOCH" \
+        -e EL_PREMINE_ADDRS="$PREMINE_ADDRS" \
+        ethpandaops/ethereum-genesis-generator:master all
+fi
 
 echo ""
 log_info "Generation complete!"
@@ -322,44 +403,49 @@ log_info "Saved generation metadata to $OUTPUT_DIR/generation-info.json"
 # Run tests if requested
 if [ "$TEST" = true ]; then
     echo ""
-    log_info "Running validation tests..."
-
-    TEST_DIR="./test-data"
-    mkdir -p "$TEST_DIR/geth" "$TEST_DIR/lighthouse" "$TEST_DIR/prysm"
-
-    # Test with Geth
-    log_info "Testing with Geth..."
-    rm -rf "$TEST_DIR/geth"/*
-    if docker run --rm \
-        -v "$OUTPUT_DIR_ABS:/genesis:ro" \
-        -v "$(pwd)/$TEST_DIR/geth:/data" \
-        ethereum/client-go:v1.14.12 \
-        init --datadir /data /genesis/genesis.json 2>&1 | grep -q "Successfully wrote genesis state"; then
-        log_info "  Geth: PASSED"
+    if [ "$INSIDE_CONTAINER" = true ]; then
+        log_warn "Skipping validation tests - not available in inside-container mode"
+        log_info "Tests require Docker which is not available inside the generator container"
     else
-        log_error "  Geth: FAILED"
-    fi
+        log_info "Running validation tests..."
 
-    # Test with Lighthouse
-    log_info "Testing with Lighthouse..."
-    rm -rf "$TEST_DIR/lighthouse"/*
-    if timeout 15 docker run --rm \
-        -v "$OUTPUT_DIR_ABS:/testnet:ro" \
-        -v "$(pwd)/$TEST_DIR/lighthouse:/data" \
-        sigp/lighthouse:latest \
-        lighthouse beacon_node \
-        --testnet-dir /testnet \
-        --datadir /data \
-        --disable-enr-auto-update \
-        --execution-endpoint http://localhost:8551 \
-        --execution-jwt-secret-key 0000000000000000000000000000000000000000000000000000000000000001 \
-        --http 2>&1 | grep -q "Beacon chain initialized"; then
-        log_info "  Lighthouse: PASSED"
-    else
-        log_error "  Lighthouse: FAILED (or timed out)"
-    fi
+        TEST_DIR="./test-data"
+        mkdir -p "$TEST_DIR/geth" "$TEST_DIR/lighthouse" "$TEST_DIR/prysm"
 
-    echo ""
+        # Test with Geth
+        log_info "Testing with Geth..."
+        rm -rf "$TEST_DIR/geth"/*
+        if docker run --rm \
+            -v "$OUTPUT_DIR_ABS:/genesis:ro" \
+            -v "$(pwd)/$TEST_DIR/geth:/data" \
+            ethereum/client-go:v1.14.12 \
+            init --datadir /data /genesis/genesis.json 2>&1 | grep -q "Successfully wrote genesis state"; then
+            log_info "  Geth: PASSED"
+        else
+            log_error "  Geth: FAILED"
+        fi
+
+        # Test with Lighthouse
+        log_info "Testing with Lighthouse..."
+        rm -rf "$TEST_DIR/lighthouse"/*
+        if timeout 15 docker run --rm \
+            -v "$OUTPUT_DIR_ABS:/testnet:ro" \
+            -v "$(pwd)/$TEST_DIR/lighthouse:/data" \
+            sigp/lighthouse:latest \
+            lighthouse beacon_node \
+            --testnet-dir /testnet \
+            --datadir /data \
+            --disable-enr-auto-update \
+            --execution-endpoint http://localhost:8551 \
+            --execution-jwt-secret-key 0000000000000000000000000000000000000000000000000000000000000001 \
+            --http 2>&1 | grep -q "Beacon chain initialized"; then
+            log_info "  Lighthouse: PASSED"
+        else
+            log_error "  Lighthouse: FAILED (or timed out)"
+        fi
+
+        echo ""
+    fi
 fi
 
 echo ""
