@@ -334,9 +334,10 @@ PARSED_GENESIS="$OUTPUT_DIR/parsed/parsedConsensusGenesis.json"
 log_info "Validator public keys (first 5 and last 5):"
 if [ -f "$PARSED_GENESIS" ]; then
     TOTAL_KEYS=$(jq -r '.validators | length' "$PARSED_GENESIS")
-    jq -r '.validators[].pubkey' "$PARSED_GENESIS" | head -5 | nl -v 0
+    # Use jq slicing to avoid SIGPIPE from head/tail with pipefail
+    jq -r '.validators[0:5][].pubkey' "$PARSED_GENESIS" | nl -v 0
     echo "  ..."
-    jq -r '.validators[].pubkey' "$PARSED_GENESIS" | tail -5 | nl -v $((TOTAL_KEYS - 5))
+    jq -r '.validators[-5:][].pubkey' "$PARSED_GENESIS" | nl -v $((TOTAL_KEYS - 5))
     echo ""
     echo "  Total validators: $TOTAL_KEYS"
 else
