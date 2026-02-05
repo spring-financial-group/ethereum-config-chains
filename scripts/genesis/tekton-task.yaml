@@ -1,0 +1,115 @@
+# Tekton Task for generating Ethereum genesis config
+# This task generates fresh genesis files for a PR preview environment
+#
+# Usage in pipeline:
+#   - name: generate-genesis
+#     taskRef:
+#       name: generate-ethereum-genesis
+#     params:
+#       - name: PR_NUMBER
+#         value: "$(params.PULL_NUMBER)"
+#
+# Note: This task requires Docker-in-Docker or a privileged container
+# Alternative: Use the Kubernetes Job version (genesis-job.yaml)
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: generate-ethereum-genesis
+spec:
+  params:
+    - name: PR_NUMBER
+      type: string
+      description: PR number for unique identification
+    - name: VALIDATORS
+      type: string
+      default: "128"
+      description: Number of validators to generate
+    - name: CHAIN_ID
+      type: string
+      default: "3151909"
+      description: Chain ID for the network
+    - name: CONFIG_REPO
+      type: string
+      default: "spring-financial-group/ethereum-config-chains"
+      description: GitHub repo for storing configs
+    - name: GIT_USER_EMAIL
+      type: string
+      default: "tekton@mqube.build"
+    - name: GIT_USER_NAME
+      type: string
+      default: "Tekton Pipeline"
+  results:
+    - name: CONFIG_PATH
+      description: The path to the generated config (e.g., preview/PR-42-1738123456)
+    - name: CONFIG_URL
+      description: Full URL to the config metadata
+  steps:
+    - name: generate-genesis
+      image: docker:24-dind
+      securityContext:
+        privileged: true
+      env:
+        - name: PR_NUMBER
+          value: "$(params.PR_NUMBER)"
+        - name: VALIDATORS
+          value: "$(params.VALIDATORS)"
+        - name: CHAIN_ID
+          value: "$(params.CHAIN_ID)"
+        - name: CONFIG_REPO
+          value: "$(params.CONFIG_REPO)"
+        - name: GIT_USER_EMAIL
+          value: "$(params.GIT_USER_EMAIL)"
+        - name: GIT_USER_NAME
+          value: "$(params.GIT_USER_NAME)"
+      script: |
+        #!/bin/sh
+        set -ex
+
+        # Start Docker daemon
+        dockerd-entrypoint.sh &
+        sleep 5
+
+        # Wait for Docker to be ready
+        for i in $(seq 1 30); do
+          docker info && break
+          echo "Waiting for Docker... $i"
+          sleep 2
+        done
+
+        # Install git
+        apk add --no-cache git bash jq
+
+        # Clone config repo
+        git clone "https://github.com/${CONFIG_REPO}.git" /workspace/config
+        cd /workspace/config
+
+        # Configure git
+        git config user.email "${GIT_USER_EMAIL}"
+        git config user.name "${GIT_USER_NAME}"
+
+        # Run genesis generation
+        cd scripts/genesis
+        OUTPUT=$(./generate-preview-config.sh \
+          --pr "${PR_NUMBER}" \
+          --validators "${VALIDATORS}" \
+          --chain-id "${CHAIN_ID}" \
+          --output-base ../../network-configs/preview)
+
+        # Extract config path
+        CONFIG_PATH=$(echo "$OUTPUT" | grep "CONFIG_PATH=" | cut -d= -f2)
+        echo "Generated config at: $CONFIG_PATH"
+
+        # Commit and push
+        cd /workspace/config
+        git add network-configs/preview/
+        git commit -m "Add preview config for PR-${PR_NUMBER}" || echo "No changes to commit"
+
+        # Push (requires git credentials)
+        # git push origin main
+
+        # Write results
+        echo -n "$CONFIG_PATH" > $(results.CONFIG_PATH.path)
+        echo -n "https://raw.githubusercontent.com/${CONFIG_REPO}/main/network-configs/${CONFIG_PATH}/metadata" > $(results.CONFIG_URL.path)
+
+        echo "Done! Config path: $CONFIG_PATH"
