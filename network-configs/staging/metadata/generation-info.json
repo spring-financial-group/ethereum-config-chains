@@ -1,7 +1,7 @@
 {
-    "generated_at": "2026-02-10T15:05:12Z",
-    "genesis_timestamp": 1770736031,
-    "genesis_date": "2026-02-10 15:07:11 UTC",
+    "generated_at": "2026-02-10T17:45:11Z",
+    "genesis_timestamp": 1770745630,
+    "genesis_date": "2026-02-10 17:47:10 UTC",
     "validators": 128,
     "chain_id": 3151909,
     "withdrawal_address": "0x57C77A6f9F1f0144d5feDbB31B2B71c3B64549DB",

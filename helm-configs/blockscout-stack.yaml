@@ -18,11 +18,11 @@ config:
   # Network configuration
   network:
     id: "3151908"
-    name: "Geth Devnet"
-    shortname: "Devnet"
+    name: "Mqube Servicing, Tokenization and Securitization Chain"
+    shortname: "MqubeNet"
     currency:
-      name: "Ether"
-      symbol: "ETH"
+      name: "MQUBE"
+      symbol: "TGBP"
       decimals: "18"
 
   testnet: false
@@ -47,10 +47,6 @@ postgresql:
 blockscout:
   enabled: true
 
-  serviceMonitor:
-    enabled: false
-  podMonitor:
-    enabled: false
   serviceMonitor:
     enabled: false
   podMonitor:
@@ -116,11 +112,6 @@ frontend:
     enabled: false
   podMonitor:
     enabled: false
-
-  serviceMonitor:
-    enabled: false
-  podMonitor:
-    enabled: false
   
   ingress:
     enabled: true
@@ -153,11 +144,10 @@ frontend:
     - name: NEXT_PUBLIC_STATS_API_BASE_PATH
       value: ""
 
-    # Header/SEO branding
-    - name: NEXT_PUBLIC_NETWORK_NAME
-      value: "Mqube Servicing, Tokenization and Securitization Chain"
-    - name: NEXT_PUBLIC_NETWORK_SHORT_NAME
-      value: "Mqube Servicing, Tokenization and Securitization Chain"
+    - name: NEXT_PUBLIC_AD_BANNER_PROVIDER
+      value: "none"
+    - name: NEXT_PUBLIC_AD_TEXT_PROVIDER
+      value: "none"
 
     # Drop the “– Blockscout” suffix in <title>
     - name: NEXT_PUBLIC_PROMOTE_BLOCKSCOUT_IN_TITLE
@@ -178,11 +168,6 @@ frontend:
 # Stats service configuration
 stats:
   enabled: true
-
-  serviceMonitor:
-    enabled: false
-  podMonitor:
-    enabled: false
 
   serviceMonitor:
     enabled: false
