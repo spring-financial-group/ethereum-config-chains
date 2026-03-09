@@ -53,13 +53,13 @@
     "eip5656TransitionTimestamp": "0x0",
     "eip6780TransitionTimestamp": "0x0",
     "depositContractAddress": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
-    "eip2537TransitionTimestamp": "0x698b709e",
-    "eip2935TransitionTimestamp": "0x698b709e",
-    "eip6110TransitionTimestamp": "0x698b709e",
-    "eip7002TransitionTimestamp": "0x698b709e",
-    "eip7251TransitionTimestamp": "0x698b709e",
-    "eip7623TransitionTimestamp": "0x698b709e",
-    "eip7702TransitionTimestamp": "0x698b709e",
+    "eip2537TransitionTimestamp": "0x69aea859",
+    "eip2935TransitionTimestamp": "0x69aea859",
+    "eip6110TransitionTimestamp": "0x69aea859",
+    "eip7002TransitionTimestamp": "0x69aea859",
+    "eip7251TransitionTimestamp": "0x69aea859",
+    "eip7623TransitionTimestamp": "0x69aea859",
+    "eip7702TransitionTimestamp": "0x69aea859",
     "blobSchedule": [
       {
         "timestamp": "0x0",
@@ -68,7 +68,7 @@
         "baseFeeUpdateFraction": "0x32f0ed"
       },
       {
-        "timestamp": "0x698b709e",
+        "timestamp": "0x69aea859",
         "target": 6,
         "max": 9,
         "baseFeeUpdateFraction": "0x4c6964"
@@ -84,7 +84,7 @@
     },
     "difficulty": "0x0",
     "author": "0x0000000000000000000000000000000000000000",
-    "timestamp": "0x698b6f1e",
+    "timestamp": "0x69aea6d9",
     "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "extraData": "",
     "gasLimit": "0x3938700"
