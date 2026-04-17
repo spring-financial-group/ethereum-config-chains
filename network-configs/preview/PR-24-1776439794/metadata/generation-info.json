@@ -1,0 +1,9 @@
+{
+  "pr_number": 24,
+  "timestamp": 1776439794,
+  "genesis_timestamp": 1776439946,
+  "generated_at": "2026-04-17T15:30:30Z",
+  "validators": 128,
+  "chain_id": 3151909,
+  "config_path": "preview/PR-24-1776439794"
+}
